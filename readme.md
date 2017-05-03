@@ -8,7 +8,7 @@
 git clone https://github.com/imsukmin/coinoneTelegramBot.git
 cd coinoneTelegramBot
 npm install
-cp config/index.cample.js config/index.js
+cp config/index.sample.js config/index.js
 # 아래의 추가과정 1 적용
 node server.js
 
