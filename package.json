@@ -1,0 +1,26 @@
+{
+  "name": "drzbot",
+  "version": "1.0.0",
+  "description": "Telegram bot for Dev Restrict Zone",
+  "main": "server.js",
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "engines": {
+    "node": ">6.0.0"
+  },
+  "private": true,
+  "scripts": {
+    "start": "node server"
+  },
+  "author": "nGenius",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.16.1",
+    "bluebird": "^3.4.7",
+    "moment": "^2.17.1",
+    "node-telegram-bot-api": "^0.25.0"
+  },
+  "devDependencies": {}
+}
