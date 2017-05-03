@@ -158,15 +158,15 @@ const isEmpty = function (obj) {
 const sendHelpMessage = function (chatID) {
   var sendMessageText = '안녕하세요 코인원 핼퍼입니다. 명령어 설명드리겠습니다.\n\n'
   sendMessageText += '/help : 현재 보고 계시는 명령어를 보실 수 있습니다.\n'
-  sendMessageText += '/btcNow : 비트코인의 현재가격을 보여줍니다.\n'
-  sendMessageText += '/ethNow : 이더리움의 현재가격을 보여줍니다.\n'
-  sendMessageText += '/etcNow : 이더리움클래식의 현재가격을 보여줍니다.\n'
-  sendMessageText += '/btcTraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
-  sendMessageText += '/ethTraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
-  sendMessageText += '/etcTraded : 이더리움클래식의 최근 거래내역 10개를 보여줍니다.\n'
-  sendMessageText += '/btcOrder : 비트코인의 현재 시장상황을 보여줍니다.\n'
-  sendMessageText += '/ethOrder : 이더리움의 현재 시장상황을 보여줍니다.\n'
-  sendMessageText += '/etcOrder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
+  sendMessageText += '/btcnow : 비트코인의 현재가격을 보여줍니다.\n'
+  sendMessageText += '/ethnow : 이더리움의 현재가격을 보여줍니다.\n'
+  sendMessageText += '/etcnow : 이더리움클래식의 현재가격을 보여줍니다.\n'
+  sendMessageText += '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
+  sendMessageText += '/ethtraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
+  sendMessageText += '/etctraded : 이더리움클래식의 최근 거래내역 10개를 보여줍니다.\n'
+  sendMessageText += '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
+  sendMessageText += '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
+  sendMessageText += '/etcorder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
   sendMessageText += '\n이상입니다 채팅창에 "/" 표시를 누르시면 사용하기 편리하니 참고해주세요.'
 
   bot.sendMessage(chatID, sendMessageText)
@@ -193,23 +193,23 @@ bot.on('message', function (msg) {
         sendHelpMessage(msg.chat.id)
       } else if (/\/help/.test(message)) {
         sendHelpMessage(msg.chat.id)
-      } else if (/\/btcNow/.test(message)) {
+      } else if (/\/btcnow/.test(message)) {
         coinoneCurrency('btc', chatID)
-      } else if (/\/ethNow/.test(message)) {
+      } else if (/\/ethnow/.test(message)) {
         coinoneCurrency('eth', chatID)
-      } else if (/\/etcNow/.test(message)) {
+      } else if (/\/etcnow/.test(message)) {
         coinoneCurrency('etc', chatID)
-      } else if (/\/btcTraded/.test(message)) {
+      } else if (/\/btctraded/.test(message)) {
         coinoneRecentCompletedOrders('btc', chatID)
-      } else if (/\/ethTraded/.test(message)) {
+      } else if (/\/ethtraded/.test(message)) {
         coinoneRecentCompletedOrders('eth', chatID)
-      } else if (/\/etcTraded/.test(message)) {
+      } else if (/\/etctraded/.test(message)) {
         coinoneRecentCompletedOrders('etc', chatID)
-      } else if (/\/btcOrder/.test(message)) {
+      } else if (/\/btcorder/.test(message)) {
         coinoneCurrentOrders('btc', chatID)
-      } else if (/\/ethOrder/.test(message)) {
+      } else if (/\/ethorder/.test(message)) {
         coinoneCurrentOrders('eth', chatID)
-      } else if (/\/etcOrder/.test(message)) {
+      } else if (/\/etcorder/.test(message)) {
         coinoneCurrentOrders('etc', chatID)
       }
     }
