@@ -2,7 +2,9 @@ var fs = require('fs'),
   TelegramBot = require('node-telegram-bot-api'),
   moment = require('moment'),
   Promise = require('bluebird'),
-  axios = require('axios')
+  axios = require('axios'),
+  Coinone = require('coinone-api')
+  coinone = new Coinone() // public API only
 
 moment.locale()
 
@@ -21,33 +23,12 @@ const ATTENDDEFAULTFILEPATH = 'data/attend_default.json'
 const adminAccountID = config.adminAccountID
 const groupChatID = config.groupChatID
 
-const coinoneAPI = function (commend, parameter) {
-  var getParameter = serializeObject(parameter)
-  // console.log('getParameter', getParameter)
-
-  axios.get('https://api.coinone.co.kr/' + commend + '/' + getParameter)
-  .then(function (response) {
-    var data = response.data
-    // console.log(data, data.result)
-    console.log(btcNow, ethNow, etcNow)
-  })
-  .catch(function (error) {
-    console.log(error);
-  })
-}
-
 const coinoneCurrency = function (currency, chatID) {
   if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'all' ) {
     console.warn('coinoneCurrency: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
-  var apiParameter = {
-    'currency': 'all' // Default value: btc, Allowed values: btc, eth, etc, all
-  }
-  var getParameter = serializeObject(apiParameter)
-  // console.log('getParameter', getParameter)
-
-  axios.get('https://api.coinone.co.kr/ticker/' + getParameter)
+  coinone.ticker('all')
   .then(function (response) {
     var data = response.data
     var btcNow = data.btc.last
@@ -71,15 +52,7 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
     console.warn('coinoneRecentCompletedOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
-
-  var apiParameter = {
-    'currency': currency, // Default value: btc, Allowed values: btc, eth, etc
-    'period': 'hour' // Default value: hour, Allowed values: hour, day
-  }
-  var getParameter = serializeObject(apiParameter)
-  // console.log('getParameter', getParameter)
-
-  axios.get('https://api.coinone.co.kr/trades/' + getParameter)
+  coinone.recentCompleteOrders(currency)
   .then(function (response) {
     var recentCount = 10
     var data = response.data
@@ -98,19 +71,7 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
 }
 
 const coinoneCurrentOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' ) {
-    console.warn('coinoneRecentCompletedOrders: currency type is NOT correct! [ currency: ' + currency + ']')
-    currency = 'btc'
-  }
-
-  var apiParameter = {
-    'currency': currency, // Default value: btc, Allowed values: btc, eth, etc
-    'period': 'hour' // Default value: hour, Allowed values: hour, day
-  }
-  var getParameter = serializeObject(apiParameter)
-  // console.log('getParameter', getParameter)
-
-  axios.get('https://api.coinone.co.kr/orderbook/' + getParameter)
+  coinone.orderbook(currency)
   .then(function (response) {
     var recentCount = 10
     var data = response.data
