@@ -1,12 +1,7 @@
-var fs = require('fs'),
-  TelegramBot = require('node-telegram-bot-api'),
-  moment = require('moment'),
-  Promise = require('bluebird'),
-  axios = require('axios'),
-  Coinone = require('coinone-api')
-  coinone = new Coinone() // public API only
-
-moment.locale()
+var TelegramBot = require('node-telegram-bot-api'),
+    axios = require('axios'),
+    Coinone = require('coinone-api')
+    coinone = new Coinone() // public API only
 
 var config = require('./config')
 
@@ -24,7 +19,7 @@ const adminAccountID = config.adminAccountID
 const groupChatID = config.groupChatID
 
 const coinoneCurrency = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'all' ) {
+  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'all' ) {
     console.warn('coinoneCurrency: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -34,11 +29,13 @@ const coinoneCurrency = function (currency, chatID) {
     var btcNow = data.btc.last
     var ethNow = data.eth.last
     var etcNow = data.etc.last
+    var xrpNow = data.xrp.last
     // console.log(data, data.result)
     switch (currency) {
       case 'btc': bot.sendMessage(chatID, 'BTC now currenct: ' + btcNow); break;
       case 'eth': bot.sendMessage(chatID, 'ETH now currenct: ' + ethNow); break;
       case 'etc': bot.sendMessage(chatID, 'ETC now currenct: ' + etcNow); break;
+      case 'xrp': bot.sendMessage(chatID, 'XRP now currenct: ' + xrpNow); break;
     }
     // console.log('btcNow:', btcNow, 'ethNow:', ethNow, 'etcNow:', etcNow)
   })
@@ -48,7 +45,7 @@ const coinoneCurrency = function (currency, chatID) {
 }
 
 const coinoneRecentCompletedOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' ) {
+  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' ) {
     console.warn('coinoneRecentCompletedOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -71,6 +68,10 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
 }
 
 const coinoneCurrentOrders = function (currency, chatID) {
+  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' ) {
+    console.warn('coinoneCurrentOrders: currency type is NOT correct! [ currency: ' + currency + ']')
+    currency = 'btc'
+  }
   coinone.orderbook(currency)
   .then(function (response) {
     var recentCount = 10
@@ -122,12 +123,15 @@ const sendHelpMessage = function (chatID) {
   sendMessageText += '/btcnow : 비트코인의 현재가격을 보여줍니다.\n'
   sendMessageText += '/ethnow : 이더리움의 현재가격을 보여줍니다.\n'
   sendMessageText += '/etcnow : 이더리움클래식의 현재가격을 보여줍니다.\n'
+  sendMessageText += '/xrpnow : 리플의 현재가격을 보여줍니다.\n'
   sendMessageText += '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
   sendMessageText += '/ethtraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
   sendMessageText += '/etctraded : 이더리움클래식의 최근 거래내역 10개를 보여줍니다.\n'
+  sendMessageText += '/xrptraded : 리플의 최근 거래내역 10개를 보여줍니다.\n'
   sendMessageText += '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
   sendMessageText += '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
   sendMessageText += '/etcorder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
+  sendMessageText += '/xrporder : 리플의 현재 시장상황을 보여줍니다.\n'
   sendMessageText += '\n이상입니다 채팅창에 "/" 표시를 누르시면 사용하기 편리하니 참고해주세요.'
 
   bot.sendMessage(chatID, sendMessageText)
@@ -160,18 +164,24 @@ bot.on('message', function (msg) {
         coinoneCurrency('eth', chatID)
       } else if (/\/etcnow/.test(message)) {
         coinoneCurrency('etc', chatID)
+      } else if (/\/xrpnow/.test(message)) {
+        coinoneCurrency('xrp', chatID)
       } else if (/\/btctraded/.test(message)) {
         coinoneRecentCompletedOrders('btc', chatID)
       } else if (/\/ethtraded/.test(message)) {
         coinoneRecentCompletedOrders('eth', chatID)
       } else if (/\/etctraded/.test(message)) {
         coinoneRecentCompletedOrders('etc', chatID)
+      } else if (/\/xrptraded/.test(message)) {
+        coinoneRecentCompletedOrders('xrp', chatID)
       } else if (/\/btcorder/.test(message)) {
         coinoneCurrentOrders('btc', chatID)
       } else if (/\/ethorder/.test(message)) {
         coinoneCurrentOrders('eth', chatID)
       } else if (/\/etcorder/.test(message)) {
         coinoneCurrentOrders('etc', chatID)
+      } else if (/\/xrporder/.test(message)) {
+        coinoneCurrentOrders('xrp', chatID)
       }
     }
   } catch (error) {

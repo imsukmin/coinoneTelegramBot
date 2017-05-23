@@ -4,8 +4,7 @@
   "description": "Telegram bot for Dev Restrict Zone",
   "main": "server.js",
   "os": [
-    "darwin",
-    "linux"
+    "any"
   ],
   "engines": {
     "node": ">6.0.0"
@@ -18,9 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.16.1",
-    "bluebird": "^3.4.7",
     "coinone-api": "^1.0.0",
-    "moment": "^2.17.1",
     "node-telegram-bot-api": "^0.25.0"
   },
   "devDependencies": {}
