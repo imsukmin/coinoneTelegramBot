@@ -5,6 +5,19 @@ var TelegramBot = require('node-telegram-bot-api'),
 
 var config = require('./config')
 
+// polyfill
+Number.isInteger = Number.isInteger || function(value) {
+  return typeof value === "number" && 
+         isFinite(value) && 
+         Math.floor(value) === value
+}
+
+if (!Array.isArray) {
+  Array.isArray = function(arg) {
+    return Object.prototype.toString.call(arg) === '[object Array]';
+  };
+}
+
 // Create a bot that uses 'polling' to fetch new updates
 var bot = new TelegramBot(config.token, { polling: true })
 
@@ -13,8 +26,28 @@ var nowCurrency = {
   btc: 0,
   eth: 0,
   etc: 0,
-  xrp: 0
+  xrp: 0,
+  init: function () {
+    coinone.ticker('all')
+    .then(function (response) {
+      nowCurrency.btc = response.data.btc.last
+      nowCurrency.eth = response.data.eth.last
+      nowCurrency.etc = response.data.etc.last
+      nowCurrency.xrp = response.data.xrp.last
+    })
+    .catch(function (error) {
+      console.log(error);
+    })
+  }
 }
+nowCurrency.init()
+
+var alermList = {
+  btc: {},
+  eth: {},
+  etc: {},
+  xrp: {}
+} // input listener object seem like 'alermList[coinType][price].push(chatID)'
 
 // chatID List
 const adminAccountID = config.adminAccountID
@@ -24,6 +57,26 @@ const coinoneCurrency = function () {
   coinone.ticker('all')
   .then(function (response) {
     var data = response.data
+    for (var coin in alermList) {
+      for (var price in alermList[coin]) {
+        for (var i in alermList[coin][price]) {
+          var chatID = alermList[coin][price][i]
+          if ((nowCurrency[coin] >= price && data[coin].last <= price) || 
+              (nowCurrency[coin] <= price && data[coin].last >= price)) {
+            bot.sendMessage(chatID, '[!ALERM!]: ' + coin + '\'s currency is ' + data[coin].last)
+            alermList[coin][price].splice(i, 1)
+            if (alermList[coin][price].length === 0) {
+              alermList[coin][price] = undefined
+            }
+          }
+        }
+
+
+      }
+    }
+
+    console.log(JSON.stringify(alermList))
+
     nowCurrency.btc = data.btc.last
     nowCurrency.eth = data.eth.last
     nowCurrency.etc = data.etc.last
@@ -88,6 +141,24 @@ const coinoneCurrentOrders = function (currency, chatID) {
   .catch(function (error) {
     console.log(error);
   })
+}
+
+const registerAlerm = function (message, chatID) {
+  var messageArray = message.split(' ')
+  var coinType = messageArray[1]
+  var price = messageArray[2]
+
+  if (coinType !== 'btc' && coinType !== 'eth' && coinType !== 'etc' && coinType !== 'xrp' ) {
+    console.warn('registerAlerm: coinType type is NOT correct! [ coinType: ' + coinType + ']')
+    return false
+  }
+
+  alermList[chatID]
+  if(!Array.isArray(alermList[coinType][price])){
+    alermList[coinType][price] = []
+  }
+  alermList[coinType][price].push(config.adminAccountID)
+  return true
 }
 
 const serializeObject = function (object) { 
@@ -175,6 +246,13 @@ bot.on('message', function (msg) {
         coinoneCurrentOrders('etc', chatID)
       } else if (/\/xrporder/.test(message)) {
         coinoneCurrentOrders('xrp', chatID)
+      } else if (/addAlerm/.test(message)) {
+        var result = registerAlerm(message, chatID)
+        if (result) {
+          bot.sendMessage(chatID, '알림이 등록 되었습니다.')
+        } else {
+          bot.sendMessage(chatID, '알림등록에 실패하였습니다.')
+        }
       }
     }
   } catch (error) {
