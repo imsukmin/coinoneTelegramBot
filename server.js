@@ -8,35 +8,27 @@ var config = require('./config')
 // Create a bot that uses 'polling' to fetch new updates
 var bot = new TelegramBot(config.token, { polling: true })
 
-// CONST list
-const IMAGELOOT = 'images'
-const TARGETIMAGE = 'images/recent.png'
-const ATTENDFILEPATH = 'data/attend.json'
-const ATTENDDEFAULTFILEPATH = 'data/attend_default.json'
+// global list
+var nowCurrency = {
+  btc: 0,
+  eth: 0,
+  etc: 0,
+  xrp: 0
+}
 
 // chatID List
 const adminAccountID = config.adminAccountID
 const groupChatID = config.groupChatID
 
-const coinoneCurrency = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'all' ) {
-    console.warn('coinoneCurrency: currency type is NOT correct! [ currency: ' + currency + ']')
-    currency = 'btc'
-  }
+const coinoneCurrency = function () {
   coinone.ticker('all')
   .then(function (response) {
     var data = response.data
-    var btcNow = data.btc.last
-    var ethNow = data.eth.last
-    var etcNow = data.etc.last
-    var xrpNow = data.xrp.last
+    nowCurrency.btc = data.btc.last
+    nowCurrency.eth = data.eth.last
+    nowCurrency.etc = data.etc.last
+    nowCurrency.xrp = data.xrp.last
     // console.log(data, data.result)
-    switch (currency) {
-      case 'btc': bot.sendMessage(chatID, 'BTC now currenct: ' + btcNow); break;
-      case 'eth': bot.sendMessage(chatID, 'ETH now currenct: ' + ethNow); break;
-      case 'etc': bot.sendMessage(chatID, 'ETC now currenct: ' + etcNow); break;
-      case 'xrp': bot.sendMessage(chatID, 'XRP now currenct: ' + xrpNow); break;
-    }
     // console.log('btcNow:', btcNow, 'ethNow:', ethNow, 'etcNow:', etcNow)
   })
   .catch(function (error) {
@@ -119,24 +111,25 @@ const isEmpty = function (obj) {
 // system message
 const sendHelpMessage = function (chatID) {
   var sendMessageText = '안녕하세요 코인원 핼퍼입니다. 명령어 설명드리겠습니다.\n\n'
-  sendMessageText += '/help : 현재 보고 계시는 명령어를 보실 수 있습니다.\n'
-  sendMessageText += '/btcnow : 비트코인의 현재가격을 보여줍니다.\n'
-  sendMessageText += '/ethnow : 이더리움의 현재가격을 보여줍니다.\n'
-  sendMessageText += '/etcnow : 이더리움클래식의 현재가격을 보여줍니다.\n'
-  sendMessageText += '/xrpnow : 리플의 현재가격을 보여줍니다.\n'
-  sendMessageText += '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
-  sendMessageText += '/ethtraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
-  sendMessageText += '/etctraded : 이더리움클래식의 최근 거래내역 10개를 보여줍니다.\n'
-  sendMessageText += '/xrptraded : 리플의 최근 거래내역 10개를 보여줍니다.\n'
-  sendMessageText += '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
-  sendMessageText += '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
-  sendMessageText += '/etcorder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
-  sendMessageText += '/xrporder : 리플의 현재 시장상황을 보여줍니다.\n'
-  sendMessageText += '\n이상입니다 채팅창에 "/" 표시를 누르시면 사용하기 편리하니 참고해주세요.'
+                        + '/help : 현재 보고 계시는 명령어를 보실 수 있습니다.\n'
+                        + '/btcnow : 비트코인의 현재가격을 보여줍니다.\n'
+                        + '/ethnow : 이더리움의 현재가격을 보여줍니다.\n'
+                        + '/etcnow : 이더리움클래식의 현재가격을 보여줍니다.\n'
+                        + '/xrpnow : 리플의 현재가격을 보여줍니다.\n'
+                        + '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/ethtraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/etctraded : 이더리움클래식의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/xrptraded : 리플의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
+                        + '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
+                        + '/etcorder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
+                        + '/xrporder : 리플의 현재 시장상황을 보여줍니다.\n'
+                        + '\n이상입니다 채팅창에 "/" 표시를 누르시면 사용하기 편리하니 참고해주세요.'
 
   bot.sendMessage(chatID, sendMessageText)
 } 
 
+setInterval(coinoneCurrency, 1000*1)
 
 // Listen for any kind of message. There are different kinds of messages.
 bot.on('message', function (msg) {
@@ -159,13 +152,13 @@ bot.on('message', function (msg) {
       } else if (/\/help/.test(message)) {
         sendHelpMessage(msg.chat.id)
       } else if (/\/btcnow/.test(message)) {
-        coinoneCurrency('btc', chatID)
+        bot.sendMessage(chatID, 'BTC now currenct: ' + nowCurrency.btc)
       } else if (/\/ethnow/.test(message)) {
-        coinoneCurrency('eth', chatID)
+        bot.sendMessage(chatID, 'ETH now currenct: ' + nowCurrency.eth)
       } else if (/\/etcnow/.test(message)) {
-        coinoneCurrency('etc', chatID)
+        bot.sendMessage(chatID, 'ETC now currenct: ' + nowCurrency.etc)
       } else if (/\/xrpnow/.test(message)) {
-        coinoneCurrency('xrp', chatID)
+        bot.sendMessage(chatID, 'XRP now currenct: ' + nowCurrency.xrp)
       } else if (/\/btctraded/.test(message)) {
         coinoneRecentCompletedOrders('btc', chatID)
       } else if (/\/ethtraded/.test(message)) {
