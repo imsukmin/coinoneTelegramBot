@@ -59,7 +59,7 @@ const coinoneCurrency = function () {
           var chatID = alarmList[coin][price][i]
           if ((nowCurrency[coin] >= price && data[coin].last <= price) || 
               (nowCurrency[coin] <= price && data[coin].last >= price)) {
-            bot.sendMessage(chatID, '[!ALaRM!]: ' + coin + '\'s currency is ' + data[coin].last)
+            bot.sendMessage(chatID, '[!ALARM!]: ' + coin + ' currency is ' + data[coin].last)
             alarmList[coin][price].splice(i, 1)
             if (alarmList[coin][price].length === 0) {
               alarmList[coin][price] = undefined
@@ -244,9 +244,9 @@ bot.on('message', function (msg) {
       } else if (/addAlarm/.test(message)) {
         var result = registerAlarm(message, chatID)
         if (result) {
-          bot.sendMessage(chatID, '알림이 등록 되었습니다.')
+          bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
-          bot.sendMessage(chatID, '알림등록에 실패하였습니다.')
+          bot.sendMessage(chatID, 'FAIL: register alarm.')
         }
       }
     }
