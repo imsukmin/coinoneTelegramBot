@@ -240,7 +240,7 @@ bot.on('message', function (msg) {
         if (result) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
-          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set [addAlarm "coin type" "price"]')
+          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "coin type" "price"]')
         }
       }
     }
