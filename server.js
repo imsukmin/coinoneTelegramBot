@@ -136,14 +136,18 @@ const coinoneCurrentOrders = function (currency, chatID) {
 const registerAlarm = function (message, chatID) {
   var messageArray = message.split(' ')
   var coinType = messageArray[1]
-  var price = messageArray[2]
+  var price = parseInt(messageArray[2])
 
   if (coinType !== 'btc' && coinType !== 'eth' && coinType !== 'etc' && coinType !== 'xrp' ) {
-    console.warn('registerAlarm: coinType type is NOT correct! [ coinType: ' + coinType + ']')
+    console.warn('registerAlarm: coinType is NOT correct! [ coinType: ' + coinType + ']')
     return false
   }
 
-  alarmList[chatID]
+  if (!price) {
+    console.warn('registerAlarm: price is NOT Number! [ price: ' + messageArray[2] + ']')
+    return false
+  }
+
   if(!Array.isArray(alarmList[coinType][price])){
     alarmList[coinType][price] = []
   }
