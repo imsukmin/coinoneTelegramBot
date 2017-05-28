@@ -69,14 +69,12 @@ const coinoneCurrency = function () {
       }
     }
 
-    console.log(data.result, JSON.stringify(alarmList))
 
     nowCurrency.btc = data.btc.last
     nowCurrency.eth = data.eth.last
     nowCurrency.etc = data.etc.last
     nowCurrency.xrp = data.xrp.last
-    // console.log(data, data.result)
-    // console.log('btcNow:', btcNow, 'ethNow:', ethNow, 'etcNow:', etcNow)
+    // console.log(data.result, JSON.stringify(alarmList))
   })
   .catch(function (error) {
     console.log(error);
@@ -99,7 +97,6 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
       sendMessageText += ( 'price: ' + recentTradeList[key].price + ', qty: ' + recentTradeList[key].qty + '\n' )
     }
     bot.sendMessage(chatID, sendMessageText)
-    // console.log(data, data.result)
   })
   .catch(function (error) {
     console.log(error);
@@ -115,7 +112,6 @@ const coinoneCurrentOrders = function (currency, chatID) {
   .then(function (response) {
     var recentCount = 10
     var data = response.data
-    // console.log(data, data.result)
     var getBuyerList = data.bid
     var getSellerList = data.ask
     var buyerList = getBuyerList.splice(0, recentCount)
@@ -138,7 +134,6 @@ const coinoneCurrentOrders = function (currency, chatID) {
 }
 
 const registerAlarm = function (message, chatID) {
-  console.log(message, chatID)
   var messageArray = message.split(' ')
   var coinType = messageArray[1]
   var price = messageArray[2]
@@ -199,7 +194,6 @@ setInterval(coinoneCurrency, 1000*1)
 
 // Listen for any kind of message. There are different kinds of messages.
 bot.on('message', function (msg) {
-  // console.log('message', msg)
   try {
     var chatID = msg.chat.id
     var message = msg.text
@@ -246,7 +240,7 @@ bot.on('message', function (msg) {
         if (result) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
-          bot.sendMessage(chatID, 'FAIL: register alarm.')
+          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set [addAlarm "coin type" "price"]')
         }
       }
     }
