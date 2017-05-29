@@ -47,7 +47,7 @@ var nowCurrency = {
 }
 nowCurrency.init()
 
-// input listener object seem like 'alarmList[coinType][price].push(chatID)'
+// input listener object seem like 'alarmList[coin][price].push(chatID)'
 var alarmList
 // for attend info data
 if(fs.existsSync(ALARMLISTPATH)){
@@ -141,13 +141,17 @@ const coinoneCurrentOrders = function (currency, chatID) {
 
 const registerAlarm = function (message, chatID) {
   var messageArray = message.split(' ')
-  var coinType = messageArray[1]
+  if(messageArray.length !== 3) {
+    console.warn('registerAlarm: format is not correct [ message: ' + message + ']')
+    return false
+  }
+  var coin = messageArray[1]
   var price = parseInt(messageArray[2])
 
-  coinType = coinType.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
 
-  if (coinType !== 'btc' && coinType !== 'eth' && coinType !== 'etc' && coinType !== 'xrp') {
-    console.warn('registerAlarm: coinType is NOT correct! [ coinType: ' + coinType + ']')
+  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp') {
+    console.warn('registerAlarm: coin is NOT correct! [ coin: ' + coin + ']')
     return false
   }
 
@@ -156,10 +160,10 @@ const registerAlarm = function (message, chatID) {
     return false
   }
 
-  if(!Array.isArray(alarmList[coinType][price])){
-    alarmList[coinType][price] = []
+  if(!Array.isArray(alarmList[coin][price])){
+    alarmList[coin][price] = []
   }
-  alarmList[coinType][price].push(chatID)
+  alarmList[coin][price].push(chatID)
   fs.writeFile(ALARMLISTPATH, JSON.stringify(alarmList), (err) => {
     if (err) throw err
     console.log('The file ' + ALARMLISTPATH + ' has been saved!')
@@ -168,12 +172,11 @@ const registerAlarm = function (message, chatID) {
 }
 
 const searchInAlarmList = function (chatID) {
-  var resultText = ''
+  var resultText = '< My Alarm List >\n'
   for (var coin in alarmList) {
     resultText += '-----[' + coin.toUpperCase() + ']-------------------------\n['
     for (var price in alarmList[coin]) {
-      console.log(coin, price, alarmList[coin][price], alarmList[coin][price].indexOf(parseInt(chatID)))
-      if (alarmList[coin][price].indexOf(parseInt(chatID)) >= 0) {
+      if (alarmList[coin][price] && alarmList[coin][price].indexOf(parseInt(chatID)) >= 0) {
         resultText += price + ', '
       }
     }
@@ -185,6 +188,47 @@ const searchInAlarmList = function (chatID) {
     }
   }
   return resultText
+}
+
+const deleteAlarmFromAlarmList = function (message, chatID) {
+  var messageArray = message.split(' ')
+  if(messageArray.length !== 3) {
+    console.warn('deleteAlarmFromAlarmList: format is not correct [ message: ' + message + ']')
+    return 'format'
+  }
+  var coin = messageArray[1]
+  var price = parseInt(messageArray[2])
+
+  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+
+  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp') {
+    console.warn('deleteAlarmFromAlarmList: coin is NOT correct! [ coin: ' + coin + ']')
+    return 'coin'
+  }
+
+  if (!price) {
+    console.warn('deleteAlarmFromAlarmList: price is NOT Number! [ price: ' + messageArray[2] + ']')
+    return 'price'
+  }
+
+
+  var chatIDindex = -1
+  if (alarmList[coin][price]) {
+    chatIDindex = alarmList[coin][price].indexOf(parseInt(chatID))
+  }
+  if (chatIDindex >= 0) {
+    alarmList[coin][price].splice(chatIDindex, 1)
+    if (alarmList[coin][price].length === 0) {
+      alarmList[coin][price] = undefined
+    }
+    fs.writeFile(ALARMLISTPATH, JSON.stringify(alarmList), (err) => {
+      if (err) throw err
+      console.log('The file ' + ALARMLISTPATH + ' has been saved!')
+    })
+    return true
+  } else {
+    return 'not found'
+  }
 }
 
 const serializeObject = function (object) { 
@@ -282,6 +326,8 @@ bot.on('message', function (msg) {
         coinoneCurrentOrders('etc', chatID)
       } else if (/\/xrporder/.test(message)) {
         coinoneCurrentOrders('xrp', chatID)
+      } else if (/showMyAlarm/.test(message) || /내알람보기/.test(message)) {
+        bot.sendMessage(chatID, searchInAlarmList(chatID))
       } else if (/addAlarm/.test(message) || /알람등록/.test(message)) {
         var result = registerAlarm(message, chatID)
         if (result) {
@@ -289,8 +335,19 @@ bot.on('message', function (msg) {
         } else {
           bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/eth/etc/xrp" "price"] or\n[알람등록 "비트/이클/이더/리플" "가격"]')
         }
-      } else if (/showMyAlarm/.test(message) || /내알람보기/.test(message)) {
-        bot.sendMessage(chatID, searchInAlarmList(chatID))
+      } else if (/deleteAlarm/.test(message) || /알람삭제/.test(message)) {
+        var result = deleteAlarmFromAlarmList(message, chatID)
+        if (result === true) {
+          bot.sendMessage(chatID, 'SUCCESS: delete alarm.')
+        } else {
+          var messageText = 'FAIL: delete alarm.\n'
+          if(result === 'format' || result === 'coin' || result === 'price') {
+            messageText += 'checkout your commend set\n[deleteAlarm "btc/eth/etc/xrp" "price"] or\n[알람삭제 "비트/이클/이더/리플" "가격"]'
+          } else if (result === 'not found') {
+            messageText += 'alarm in commend is not registered\n' + searchInAlarmList(chatID)
+          }
+          bot.sendMessage(chatID, messageText)
+        }
       }
     }
   } catch (error) {
