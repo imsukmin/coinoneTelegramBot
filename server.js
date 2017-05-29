@@ -1,7 +1,8 @@
 var TelegramBot = require('node-telegram-bot-api'),
     axios = require('axios'),
-    Coinone = require('coinone-api')
-    coinone = new Coinone() // public API only
+    Coinone = require('coinone-api'),
+    coinone = new Coinone(), // public API only
+    fs = require('fs')
 
 var config = require('./config')
 
@@ -17,6 +18,10 @@ if (!Array.isArray) {
     return Object.prototype.toString.call(arg) === '[object Array]';
   };
 }
+
+// const
+const ALARMLISTPATH = 'data/alarmList.json'
+const ALARMLISTDEFAULTPATH = 'data/alarmList.default.json'
 
 // Create a bot that uses 'polling' to fetch new updates
 var bot = new TelegramBot(config.token, { polling: true })
@@ -42,12 +47,14 @@ var nowCurrency = {
 }
 nowCurrency.init()
 
-var alarmList = {
-  btc: {},
-  eth: {},
-  etc: {},
-  xrp: {}
-} // input listener object seem like 'alarmList[coinType][price].push(chatID)'
+// input listener object seem like 'alarmList[coinType][price].push(chatID)'
+var alarmList
+// for attend info data
+if(fs.existsSync(ALARMLISTPATH)){
+  alarmList = JSON.parse(fs.readFileSync(ALARMLISTPATH, 'utf8'))
+} else {
+  alarmList = JSON.parse(fs.readFileSync(ALARMLISTDEFAULTPATH, 'utf8'))
+}
 
 const coinoneCurrency = function () {
   coinone.ticker('all')
@@ -138,7 +145,9 @@ const registerAlarm = function (message, chatID) {
   var coinType = messageArray[1]
   var price = parseInt(messageArray[2])
 
-  if (coinType !== 'btc' && coinType !== 'eth' && coinType !== 'etc' && coinType !== 'xrp' ) {
+  coinType = coinType.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+
+  if (coinType !== 'btc' && coinType !== 'eth' && coinType !== 'etc' && coinType !== 'xrp') {
     console.warn('registerAlarm: coinType is NOT correct! [ coinType: ' + coinType + ']')
     return false
   }
@@ -152,6 +161,10 @@ const registerAlarm = function (message, chatID) {
     alarmList[coinType][price] = []
   }
   alarmList[coinType][price].push(chatID)
+  fs.writeFile(ALARMLISTPATH, JSON.stringify(alarmList), (err) => {
+    if (err) throw err
+    console.log('The file ' + ALARMLISTPATH + ' has been saved!')
+  })
   return true
 }
 
@@ -239,12 +252,12 @@ bot.on('message', function (msg) {
         coinoneCurrentOrders('etc', chatID)
       } else if (/\/xrporder/.test(message)) {
         coinoneCurrentOrders('xrp', chatID)
-      } else if (/addAlarm/.test(message)) {
+      } else if (/addAlarm/.test(message) || /알람등록/.test(message)) {
         var result = registerAlarm(message, chatID)
         if (result) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
-          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "coin type" "price"]')
+          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/eth/etc/xrp" "price"] or\n[알람등록 "비트/이클/이더/리플" "가격"]')
         }
       }
     }
