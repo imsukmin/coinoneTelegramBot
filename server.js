@@ -76,7 +76,6 @@ const coinoneCurrency = function () {
       }
     }
 
-
     nowCurrency.btc = data.btc.last
     nowCurrency.eth = data.eth.last
     nowCurrency.etc = data.etc.last
@@ -168,6 +167,26 @@ const registerAlarm = function (message, chatID) {
   return true
 }
 
+const searchInAlarmList = function (chatID) {
+  var resultText = ''
+  for (var coin in alarmList) {
+    resultText += '-----[' + coin.toUpperCase() + ']-------------------------\n['
+    for (var price in alarmList[coin]) {
+      console.log(coin, price, alarmList[coin][price], alarmList[coin][price].indexOf(parseInt(chatID)))
+      if (alarmList[coin][price].indexOf(parseInt(chatID)) >= 0) {
+        resultText += price + ', '
+      }
+    }
+    if (resultText.indexOf(',') >= 0) {
+      resultText = resultText.slice(0, -2)
+      resultText += ']\n'
+    } else {
+      resultText = resultText.slice(0, -1)
+    }
+  }
+  return resultText
+}
+
 const serializeObject = function (object) { 
   if (isEmpty(object)) {
     return ''
@@ -184,6 +203,17 @@ const serializeObject = function (object) {
 
 const isEmpty = function (obj) {
     return Object.keys(obj).length === 0;
+}
+
+const searchInArray = function (element, targetArray) {
+  var indices = []
+  var idx = targetArray.indexOf(element);
+  while (idx != -1) {
+    indices.push(idx)
+    idx = targetArray.indexOf(element, idx + 1)
+  }
+  console.log(indices) // [0, 2, 4]
+  return indices
 }
 
 // system message
@@ -259,6 +289,8 @@ bot.on('message', function (msg) {
         } else {
           bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/eth/etc/xrp" "price"] or\n[알람등록 "비트/이클/이더/리플" "가격"]')
         }
+      } else if (/showMyAlarm/.test(message) || /내알람보기/.test(message)) {
+        bot.sendMessage(chatID, searchInAlarmList(chatID))
       }
     }
   } catch (error) {
