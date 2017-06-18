@@ -276,9 +276,22 @@ const sendHelpMessage = function (chatID) {
                         + '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
                         + '/etcorder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
                         + '/xrporder : 리플의 현재 시장상황을 보여줍니다.\n'
+                        + '알람확인 : 내가 등록한 코인의 종류를 알려줍니다.\n'
+                        + '알람등록 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 등록합니다.\n'
+                        + '알람삭제 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 삭제합니다.\n'
                         + '\n이상입니다 채팅창에 "/" 표시를 누르시면 사용하기 편리하니 참고해주세요.'
 
-  bot.sendMessage(chatID, sendMessageText)
+  bot.sendMessage(chatID, sendMessageText, {
+      reply_markup: {
+        keyboard: [
+          [{text: '/btcnow'}, {text: '/ethnow'}, {text: '/etcnow'}, {text: '/xrpnow'}],
+          [{text: '/btctraded'}, {text: '/ethtraded'}, {text: '/etctraded'}, {text: '/xrptraded'}],
+          [{text: '/btcorder'}, {text: '/ethorder'}, {text: '/etcorder'}, {text: '/xrporder'}],
+          [{text: '알람확인'}, {text: '/help'}],
+        ],
+        resize_keyboard: true
+      }
+    })
 } 
 
 setInterval(coinoneCurrency, 1000*1)
@@ -326,7 +339,7 @@ bot.on('message', function (msg) {
         coinoneCurrentOrders('etc', chatID)
       } else if (/\/xrporder/.test(message)) {
         coinoneCurrentOrders('xrp', chatID)
-      } else if (/showMyAlarm/.test(message) || /내알람보기/.test(message)) {
+      } else if (/showMyAlarm/.test(message) || /내알람보기/.test(message) || /알람확인/.test(message)) {
         bot.sendMessage(chatID, searchInAlarmList(chatID))
       } else if (/addAlarm/.test(message) || /알람등록/.test(message)) {
         var result = registerAlarm(message, chatID)
