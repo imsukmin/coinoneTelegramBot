@@ -71,6 +71,10 @@ const coinoneCurrency = function () {
             if (alarmList[coin][price].length === 0) {
               alarmList[coin][price] = undefined
             }
+            fs.writeFile(ALARMLISTPATH, JSON.stringify(alarmList), (err) => {
+              if (err) throw err
+              console.log('The file ' + ALARMLISTPATH + ' has been saved!')
+            })
           }
         }
       }
