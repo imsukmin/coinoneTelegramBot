@@ -298,7 +298,7 @@ const sendHelpMessage = function (chatID) {
     })
 } 
 
-setInterval(coinoneCurrency, 1000*5)
+setInterval(coinoneCurrency, 1000*2)
 
 // Listen for any kind of message. There are different kinds of messages.
 bot.on('message', function (msg) {
