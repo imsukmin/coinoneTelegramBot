@@ -16,8 +16,8 @@
   "author": "nGenius",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.16.1",
-    "coinone-api": "^1.0.0",
+    "axios": "^0.16.2",
+    "coinone-api": "^1.2.5",
     "node-telegram-bot-api": "^0.25.0"
   },
   "devDependencies": {}

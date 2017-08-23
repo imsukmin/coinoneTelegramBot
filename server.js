@@ -29,6 +29,7 @@ var bot = new TelegramBot(config.token, { polling: true })
 // global list
 var nowCurrency = {
   btc: 0,
+  bch: 0,
   eth: 0,
   etc: 0,
   xrp: 0,
@@ -36,6 +37,7 @@ var nowCurrency = {
     coinone.ticker('all')
     .then(function (response) {
       nowCurrency.btc = response.data.btc.last
+      nowCurrency.bch = response.data.bch.last
       nowCurrency.eth = response.data.eth.last
       nowCurrency.etc = response.data.etc.last
       nowCurrency.xrp = response.data.xrp.last
@@ -85,6 +87,7 @@ const coinoneCurrency = function () {
     }
 
     nowCurrency.btc = data.btc.last
+    nowCurrency.bch = data.bch.last
     nowCurrency.eth = data.eth.last
     nowCurrency.etc = data.etc.last
     nowCurrency.xrp = data.xrp.last
@@ -96,7 +99,7 @@ const coinoneCurrency = function () {
 }
 
 const coinoneRecentCompletedOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' ) {
+  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' ) {
     console.warn('coinoneRecentCompletedOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -118,7 +121,7 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
 }
 
 const coinoneCurrentOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' ) {
+  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' ) {
     console.warn('coinoneCurrentOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -156,7 +159,7 @@ const registerAlarm = function (message, chatID) {
   var coin = messageArray[1]
   var price = parseInt(messageArray[2])
 
-  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp').replace('캐시', 'bch')
 
   if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp') {
     console.warn('registerAlarm: coin is NOT correct! [ coin: ' + coin + ']')
@@ -207,7 +210,7 @@ const deleteAlarmFromAlarmList = function (message, chatID) {
   var coin = messageArray[1]
   var price = parseInt(messageArray[2])
 
-  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp').replace('캐시', 'bch')
 
   if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp') {
     console.warn('deleteAlarmFromAlarmList: coin is NOT correct! [ coin: ' + coin + ']')
@@ -264,7 +267,6 @@ const searchInArray = function (element, targetArray) {
     indices.push(idx)
     idx = targetArray.indexOf(element, idx + 1)
   }
-  console.log(indices) // [0, 2, 4]
   return indices
 }
 
@@ -273,14 +275,17 @@ const sendHelpMessage = function (chatID) {
   var sendMessageText = '안녕하세요 코인원 핼퍼입니다. 명령어 설명드리겠습니다.\n\n'
                         + '/help : 현재 보고 계시는 명령어를 보실 수 있습니다.\n'
                         + '/btcnow : 비트코인의 현재가격을 보여줍니다.\n'
+                        + '/bchnow : 비트코인캐시의 현재가격을 보여줍니다.\n'
                         + '/ethnow : 이더리움의 현재가격을 보여줍니다.\n'
                         + '/etcnow : 이더리움클래식의 현재가격을 보여줍니다.\n'
                         + '/xrpnow : 리플의 현재가격을 보여줍니다.\n'
                         + '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/bchtraded : 비트코인캐시의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/ethtraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/etctraded : 이더리움클래식의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/xrptraded : 리플의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
+                        + '/bchorder : 비트코인캐시의 현재 시장상황을 보여줍니다.\n'
                         + '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
                         + '/etcorder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
                         + '/xrporder : 리플의 현재 시장상황을 보여줍니다.\n'
@@ -292,9 +297,9 @@ const sendHelpMessage = function (chatID) {
   bot.sendMessage(chatID, sendMessageText, {
       reply_markup: {
         keyboard: [
-          [{text: '/btcnow'}, {text: '/ethnow'}, {text: '/etcnow'}, {text: '/xrpnow'}],
-          [{text: '/btctraded'}, {text: '/ethtraded'}, {text: '/etctraded'}, {text: '/xrptraded'}],
-          [{text: '/btcorder'}, {text: '/ethorder'}, {text: '/etcorder'}, {text: '/xrporder'}],
+          [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/ethnow'}, {text: '/etcnow'}, {text: '/xrpnow'}],
+          [{text: '/btctraded'}, {text: '/bchtraded'}, {text: '/ethtraded'}, {text: '/etctraded'}, {text: '/xrptraded'}],
+          [{text: '/btcorder'}, {text: '/bchorder'}, {text: '/ethorder'}, {text: '/etcorder'}, {text: '/xrporder'}],
           [{text: '알람확인'}, {text: '/help'}],
         ],
         resize_keyboard: true
@@ -325,6 +330,8 @@ bot.on('message', function (msg) {
         sendHelpMessage(msg.chat.id)
       } else if (/\/btcnow/.test(message)) {
         bot.sendMessage(chatID, 'BTC now currenct: ' + nowCurrency.btc)
+      } else if (/\/bchnow/.test(message)) {
+        bot.sendMessage(chatID, 'BCH now currenct: ' + nowCurrency.bch)
       } else if (/\/ethnow/.test(message)) {
         bot.sendMessage(chatID, 'ETH now currenct: ' + nowCurrency.eth)
       } else if (/\/etcnow/.test(message)) {
@@ -333,6 +340,8 @@ bot.on('message', function (msg) {
         bot.sendMessage(chatID, 'XRP now currenct: ' + nowCurrency.xrp)
       } else if (/\/btctraded/.test(message)) {
         coinoneRecentCompletedOrders('btc', chatID)
+      } else if (/\/bchtraded/.test(message)) {
+        coinoneRecentCompletedOrders('bch', chatID)
       } else if (/\/ethtraded/.test(message)) {
         coinoneRecentCompletedOrders('eth', chatID)
       } else if (/\/etctraded/.test(message)) {
@@ -341,6 +350,8 @@ bot.on('message', function (msg) {
         coinoneRecentCompletedOrders('xrp', chatID)
       } else if (/\/btcorder/.test(message)) {
         coinoneCurrentOrders('btc', chatID)
+      } else if (/\/bchorder/.test(message)) {
+        coinoneCurrentOrders('bch', chatID)
       } else if (/\/ethorder/.test(message)) {
         coinoneCurrentOrders('eth', chatID)
       } else if (/\/etcorder/.test(message)) {
@@ -354,7 +365,7 @@ bot.on('message', function (msg) {
         if (result) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
-          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/eth/etc/xrp" "price"] or\n[알람등록 "비트/이클/이더/리플" "가격"]')
+          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/bch/eth/etc/xrp" "price"] or\n[알람등록 "비트/캐시/이클/이더/리플" "가격"]')
         }
       } else if (/deleteAlarm/.test(message) || /알람삭제/.test(message)) {
         var result = deleteAlarmFromAlarmList(message, chatID)
@@ -363,7 +374,7 @@ bot.on('message', function (msg) {
         } else {
           var messageText = 'FAIL: delete alarm.\n'
           if(result === 'format' || result === 'coin' || result === 'price') {
-            messageText += 'checkout your commend set\n[deleteAlarm "btc/eth/etc/xrp" "price"] or\n[알람삭제 "비트/이클/이더/리플" "가격"]'
+            messageText += 'checkout your commend set\n[deleteAlarm "btc/bch/eth/etc/xrp" "price"] or\n[알람삭제 "비트/캐시/이클/이더/리플" "가격"]'
           } else if (result === 'not found') {
             messageText += 'alarm in commend is not registered\n' + searchInAlarmList(chatID)
           }
