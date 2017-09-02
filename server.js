@@ -44,7 +44,7 @@ var nowCurrency = {
       nowCurrency.qtum = response.data.qtum.last
     })
     .catch(function (error) {
-      console.log(error);
+      console.log('[nowCurrency.init]',error);
     })
   }
 }
@@ -62,11 +62,12 @@ if(fs.existsSync(ALARMLISTPATH)){
 const coinoneCurrency = function () {
   coinone.ticker('all')
   .then(function (response) {
-    var data = response.data
-    if(data.result && data.result === 'error') {
-      console.log('!==API ERROR==!', data)
+    if(response === undefined) {
+      console.log('!==API ERROR==!')
+      bot.sendMessage(config.adminAccountID, '[coinoneCurrency] ticker is block!')
       return
     }
+    var data = response.data
     for (var coin in alarmList) {
       for (var price in alarmList[coin]) {
         for (var i in alarmList[coin][price]) {
@@ -96,7 +97,7 @@ const coinoneCurrency = function () {
     // console.log(data.result, JSON.stringify(alarmList))
   })
   .catch(function (error) {
-    console.log(error);
+    console.log('[coinoneCurrency]',error);
   })
 }
 
@@ -118,7 +119,7 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
     bot.sendMessage(chatID, sendMessageText)
   })
   .catch(function (error) {
-    console.log(error);
+    console.log('[coinoneRecentCompletedOrders]', error);
   })
 }
 
@@ -148,7 +149,7 @@ const coinoneCurrentOrders = function (currency, chatID) {
     bot.sendMessage(chatID, sendMessageText)
   })
   .catch(function (error) {
-    console.log(error);
+    console.log('[coinoneCurrentOrders]', error);
   })
 }
 
@@ -248,33 +249,33 @@ const deleteAlarmFromAlarmList = function (message, chatID) {
   }
 }
 
-const serializeObject = function (object) { 
-  if (isEmpty(object)) {
-    return ''
-  }
+// const serializeObject = function (object) {
+//   if (isEmpty(object)) {
+//     return ''
+//   }
+//
+//   var data = [];
+//   for(var p in object) {
+//     if (object.hasOwnProperty(p)) {
+//       data.push(encodeURIComponent(p) + "=" + encodeURIComponent(object[p]))
+//     }
+//   }
+//   return '?' + data.join("&");
+// }
 
-  var data = [];
-  for(var p in object) {
-    if (object.hasOwnProperty(p)) {
-      data.push(encodeURIComponent(p) + "=" + encodeURIComponent(object[p]))
-    }
-  }
-  return '?' + data.join("&");
-}
+// const isEmpty = function (obj) {
+//     return Object.keys(obj).length === 0;
+// }
 
-const isEmpty = function (obj) {
-    return Object.keys(obj).length === 0;
-}
-
-const searchInArray = function (element, targetArray) {
-  var indices = []
-  var idx = targetArray.indexOf(element);
-  while (idx != -1) {
-    indices.push(idx)
-    idx = targetArray.indexOf(element, idx + 1)
-  }
-  return indices
-}
+// const searchInArray = function (element, targetArray) {
+//   var indices = []
+//   var idx = targetArray.indexOf(element);
+//   while (idx != -1) {
+//     indices.push(idx)
+//     idx = targetArray.indexOf(element, idx + 1)
+//   }
+//   return indices
+// }
 
 // system message
 const sendHelpMessage = function (chatID) {
@@ -316,7 +317,7 @@ const sendHelpMessage = function (chatID) {
     })
 } 
 
-setInterval(coinoneCurrency, 1000*1)
+setInterval(coinoneCurrency, 1000*2.5)
 
 // Listen for any kind of message. There are different kinds of messages.
 bot.on('message', function (msg) {
@@ -328,10 +329,10 @@ bot.on('message', function (msg) {
     } else if (msg.photo) {
       // message with photo
     } else if (message) {
-      var name = msg.from.first_name
-      if (msg.from.last_name !== undefined){
-        name = name + ' ' + msg.from.last_name
-      }
+      // var name = msg.from.first_name
+      // if (msg.from.last_name !== undefined){
+      //   name = name + ' ' + msg.from.last_name
+      // }
 
       if (/\/start/.test(message)) {
         sendHelpMessage(msg.chat.id)
@@ -348,7 +349,7 @@ bot.on('message', function (msg) {
       } else if (/\/xrpnow/.test(message)) {
         bot.sendMessage(chatID, 'XRP now currenct: ' + nowCurrency.xrp)
       } else if (/\/qtumnow/.test(message)) {
-        bot.sendMessage(chatID, 'QTUM now currenct: ' + nowCurrency.qutm)
+        bot.sendMessage(chatID, 'QTUM now currenct: ' + nowCurrency.qtum)
       } else if (/\/btctraded/.test(message)) {
         coinoneRecentCompletedOrders('btc', chatID)
       } else if (/\/bchtraded/.test(message)) {
@@ -376,8 +377,7 @@ bot.on('message', function (msg) {
       } else if (/showMyAlarm/.test(message) || /내알람보기/.test(message) || /알람확인/.test(message)) {
         bot.sendMessage(chatID, searchInAlarmList(chatID))
       } else if (/addAlarm/.test(message) || /알람등록/.test(message)) {
-        var result = registerAlarm(message, chatID)
-        if (result) {
+        if (registerAlarm(message, chatID)) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
           bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/bch/eth/etc/xrp/qtum" "price"] or\n[알람등록 "비트/캐시/이클/이더/리플/퀀텀" "가격"]')
@@ -398,6 +398,6 @@ bot.on('message', function (msg) {
       }
     }
   } catch (error) {
-    console.warn(error)
+    console.warn('[bot.on]', error)
   }
 })
