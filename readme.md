@@ -1,6 +1,6 @@
 코인원 API를 이용한 코인원 거래정보를 조회 할수 있도록 만들어진 telegramBot입니다.
 
-텔래그램에서 @coinoneHelpBot이라고 검색하면 사용해 보실 수 있습니다.
+텔래그램에서 [@coinoneHelpBot](http://t.me/coinoneHelpBot)이라고 검색하면 사용해 보실 수 있습니다.
 
 ## 설치
 
