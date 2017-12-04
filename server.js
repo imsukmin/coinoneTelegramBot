@@ -44,6 +44,7 @@ var nowCurrency = {
       nowCurrency.xrp = response.data.xrp.last
       nowCurrency.qtum = response.data.qtum.last
       nowCurrency.ltc = response.data.ltc.last
+      nowCurrency.iota = response.data.iota.last
     })
     .catch(function (error) {
       console.log('[nowCurrency.init]',error);
@@ -97,6 +98,7 @@ const coinoneCurrency = function () {
     nowCurrency.xrp = data.xrp.last
     nowCurrency.qtum = data.qtum.last
     nowCurrency.ltc = data.ltc.last
+    nowCurrency.iota = data.iota.last
     // console.log(data.result, JSON.stringify(alarmList))
   })
   .catch(function (error) {
@@ -105,7 +107,7 @@ const coinoneCurrency = function () {
 }
 
 const coinoneRecentCompletedOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'qtum' && currency !== 'ltc' ) {
+  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'qtum' && currency !== 'ltc' && currency !== 'iota' ) {
     console.warn('coinoneRecentCompletedOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -127,7 +129,7 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
 }
 
 const coinoneCurrentOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'qtum' && currency !== 'ltc' ) {
+  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'qtum' && currency !== 'ltc' && currency !== 'iota' ) {
     console.warn('coinoneCurrentOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -165,9 +167,11 @@ const registerAlarm = function (message, chatID) {
   var coin = messageArray[1]
   var price = parseInt(messageArray[2])
 
-  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp').replace('캐시', 'bch').replace('퀀텀', 'qtum').replace('라코', 'ltc')
+  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+             .replace('캐시', 'bch').replace('퀀텀', 'qtum').replace('라코', 'ltc').replace('아이오타', 'iota')
 
-  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp' && coin !== 'bch' && coin !== 'qtum' && coin !== 'ltc') {
+  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp' && 
+      coin !== 'bch' && coin !== 'qtum' && coin !== 'ltc' && coin !== 'iota') {
     console.warn('registerAlarm: coin is NOT correct! [ coin: ' + coin + ']')
     return false
   }
@@ -218,9 +222,11 @@ const deleteAlarmFromAlarmList = function (message, chatID) {
   var coin = messageArray[1]
   var price = parseInt(messageArray[2])
 
-  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp').replace('캐시', 'bch').replace('퀀텀', 'qtum').replace('라코', 'ltc')
+  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+             .replace('캐시', 'bch').replace('퀀텀', 'qtum').replace('라코', 'ltc').replace('아이오타', 'iota')
 
-  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp' && coin !== 'bch' && coin !== 'qtum' && coin !== 'qtum') {
+  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp' && 
+      coin !== 'bch' && coin !== 'qtum' && coin !== 'ltc' && coin !== 'iota') {
     console.warn('deleteAlarmFromAlarmList: coin is NOT correct! [ coin: ' + coin + ']')
     return 'coin'
   }
@@ -291,6 +297,7 @@ const sendHelpMessage = function (chatID) {
                         + '/xrpnow : 리플의 현재가격을 보여줍니다.\n'
                         + '/qtumnow : 퀀텀의 현재가격을 보여줍니다.\n'
                         + '/ltcnow : 라이트코인의 현재가격을 보여줍니다.\n'
+                        + '/iotanow : 아이오타의 현재가격을 보여줍니다.\n'
                         + '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/bchtraded : 비트코인캐시의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/ethtraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
@@ -298,6 +305,7 @@ const sendHelpMessage = function (chatID) {
                         + '/xrptraded : 리플의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/qtumtraded : 퀀텀의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/ltctraded : 라이트코인의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/iotatraded : 아이오타의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
                         + '/bchorder : 비트코인캐시의 현재 시장상황을 보여줍니다.\n'
                         + '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
@@ -305,6 +313,7 @@ const sendHelpMessage = function (chatID) {
                         + '/xrporder : 리플의 현재 시장상황을 보여줍니다.\n'
                         + '/qtumorder : 퀀텀의 현재 시장상황을 보여줍니다.\n'
                         + '/ltcorder : 라이트코인의 현재 시장상황을 보여줍니다.\n'
+                        + '/iotaorder : 아이오타의 현재 시장상황을 보여줍니다.\n'
                         + '알람확인 : 내가 등록한 코인의 종류를 알려줍니다.\n'
                         + '알람등록 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 등록합니다.\n'
                         + '알람삭제 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 삭제합니다.\n'
@@ -315,7 +324,8 @@ const sendHelpMessage = function (chatID) {
         keyboard: [
           [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/ethnow'}],
           [{text: '/etcnow'}, {text: '/xrpnow'}, {text: '/qtumnow'}],
-          [{text: '/ltcnow'}, {text: '알람확인'}, {text: '/help'}],
+          [{text: '/ltcnow'}, {text: '/iotanow'}, {text: '알람확인'}],
+          [{text: '/help'}],
         ],
         resize_keyboard: true
       }
@@ -357,6 +367,8 @@ bot.on('message', function (msg) {
         bot.sendMessage(chatID, 'QTUM now currenct: ' + nowCurrency.qtum)
       } else if (/\/ltcnow/.test(message)) {
         bot.sendMessage(chatID, 'LTC now currenct: ' + nowCurrency.ltc)
+      } else if (/\/iotanow/.test(message)) {
+        bot.sendMessage(chatID, 'IOTA now currenct: ' + nowCurrency.iota)
       } else if (/\/btctraded/.test(message)) {
         coinoneRecentCompletedOrders('btc', chatID)
       } else if (/\/bchtraded/.test(message)) {
@@ -371,6 +383,8 @@ bot.on('message', function (msg) {
         coinoneRecentCompletedOrders('qtum', chatID)
       } else if (/\/ltctraded/.test(message)) {
         coinoneRecentCompletedOrders('ltc', chatID)
+      } else if (/\/iotatraded/.test(message)) {
+        coinoneRecentCompletedOrders('iota', chatID)
       } else if (/\/btcorder/.test(message)) {
         coinoneCurrentOrders('btc', chatID)
       } else if (/\/bchorder/.test(message)) {
@@ -385,13 +399,15 @@ bot.on('message', function (msg) {
         coinoneCurrentOrders('qtum', chatID)
       } else if (/\/ltcorder/.test(message)) {
         coinoneCurrentOrders('ltc', chatID)
+      } else if (/\/iotaorder/.test(message)) {
+        coinoneCurrentOrders('iota', chatID)
       } else if (/showMyAlarm/.test(message) || /내알람보기/.test(message) || /알람확인/.test(message)) {
         bot.sendMessage(chatID, searchInAlarmList(chatID))
       } else if (/addAlarm/.test(message) || /알람등록/.test(message)) {
         if (registerAlarm(message, chatID)) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
-          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/bch/eth/etc/xrp/qtum/ltc" "price"] or\n[알람등록 "비트/캐시/이클/이더/리플/퀀텀/라코" "가격"]')
+          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/bch/eth/etc/xrp/qtum/ltc/iota" "price"] or\n[알람등록 "비트/캐시/이클/이더/리플/퀀텀/라코/아이오타" "가격"]')
         }
       } else if (/deleteAlarm/.test(message) || /알람삭제/.test(message)) {
         var result = deleteAlarmFromAlarmList(message, chatID)
@@ -400,7 +416,7 @@ bot.on('message', function (msg) {
         } else {
           var messageText = 'FAIL: delete alarm.\n'
           if(result === 'format' || result === 'coin' || result === 'price') {
-            messageText += 'checkout your commend set\n[deleteAlarm "btc/bch/eth/etc/xrp/qtum/ltc" "price"] or\n[알람삭제 "비트/캐시/이클/이더/리플/퀀텀/라코" "가격"]'
+            messageText += 'checkout your commend set\n[deleteAlarm "btc/bch/eth/etc/xrp/qtum/ltc/iota" "price"] or\n[알람삭제 "비트/캐시/이클/이더/리플/퀀텀/라코/아이오타" "가격"]'
           } else if (result === 'not found') {
             messageText += 'alarm in commend is not registered\n' + searchInAlarmList(chatID)
           }
