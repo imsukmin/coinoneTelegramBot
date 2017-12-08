@@ -34,6 +34,7 @@ var nowCurrency = {
   xrp: 0,
   qtum: 0,
   ltc: 0,
+  iota: 0,
   init: function () {
     coinone.ticker('all')
     .then(function (response) {
@@ -103,6 +104,7 @@ const coinoneCurrency = function () {
   })
   .catch(function (error) {
     console.log('[coinoneCurrency]',error);
+    // bot.sendMessage(config.adminAccountID, '[coinoneCurrency] ticker is error!')
   })
 }
 
@@ -333,6 +335,38 @@ const sendHelpMessage = function (chatID) {
 } 
 
 setInterval(coinoneCurrency, 1000*2.5)
+
+setInterval(function() {
+  var currencyNowText = 
+  '[BTC]     ' + nowCurrency.btc + ' (' + ((nowCurrency.btc - beforeCurrency.btc) > 0 ? '+' : '') + (nowCurrency.btc - beforeCurrency.btc) + ')' 
+  + '\n[BCH]     ' + nowCurrency.bch + ' (' + ((nowCurrency.bch - beforeCurrency.bch) > 0 ? '+' : '') + (nowCurrency.bch - beforeCurrency.bch) + ')' 
+  + '\n[ETH]      ' + nowCurrency.eth + ' (' + ((nowCurrency.eth - beforeCurrency.eth) > 0 ? '+' : '') + (nowCurrency.eth - beforeCurrency.eth) + ')' 
+  + '\n[ETC]      ' + nowCurrency.etc + ' (' + ((nowCurrency.etc - beforeCurrency.etc) > 0 ? '+' : '') + (nowCurrency.etc - beforeCurrency.etc) + ')' 
+  + '\n[XRP]      ' + nowCurrency.xrp + ' (' + ((nowCurrency.xrp - beforeCurrency.xrp) > 0 ? '+' : '') + (nowCurrency.xrp - beforeCurrency.xrp) + ')' 
+  + '\n[QTUM] ' + nowCurrency.qtum + ' (' + ((nowCurrency.qtum - beforeCurrency.qtum) > 0 ? '+' : '') + (nowCurrency.qtum - beforeCurrency.qtum) + ')' 
+  + '\n[LTC]      ' + nowCurrency.ltc + ' (' + ((nowCurrency.ltc - beforeCurrency.ltc) > 0 ? '+' : '') + (nowCurrency.ltc - beforeCurrency.ltc) + ')' 
+  + '\n[IOTA]    ' + nowCurrency.iota + ' (' + ((nowCurrency.iota - beforeCurrency.iota) > 0 ? '+' : '') +(nowCurrency.iota - beforeCurrency.iota)  + ')'
+  // console.log('currencyNowText', currencyNowText)
+  beforeCurrency.btc = nowCurrency.btc
+  beforeCurrency.bch = nowCurrency.bch
+  beforeCurrency.eth = nowCurrency.eth
+  beforeCurrency.etc = nowCurrency.etc
+  beforeCurrency.xrp = nowCurrency.xrp
+  beforeCurrency.qtum = nowCurrency.qtum
+  beforeCurrency.ltc = nowCurrency.ltc
+  beforeCurrency.iota = nowCurrency.iota
+  bot.sendMessage(config.channelID , currencyNowText) // sendMessageTo @channelName
+}, 60 * 1000)
+var beforeCurrency = {
+  btc: 0,
+  bch: 0,
+  eth: 0,
+  etc: 0,
+  xrp: 0,
+  qtum: 0,
+  ltc: 0,
+  iota: 0
+}
 
 // Listen for any kind of message. There are different kinds of messages.
 bot.on('message', function (msg) {

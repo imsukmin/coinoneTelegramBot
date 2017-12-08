@@ -1,7 +1,7 @@
 {
-  "name": "drzbot",
+  "name": "coinoneTelegramBot-coinoneHelpBot",
   "version": "1.4.1",
-  "description": "Telegram bot for Dev Restrict Zone",
+  "description": "Telegram bot for get telegram currency info",
   "main": "server.js",
   "os": [
     "any"
