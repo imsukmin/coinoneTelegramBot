@@ -21,6 +21,9 @@ if (!Array.isArray) {
 // const
 const ALARMLISTPATH = 'data/alarmList.json'
 const ALARMLISTDEFAULTPATH = 'data/alarmList.default.json'
+const APIINFOLISTPATH = 'data/apiInfo.json'
+const APIINFOLISTDEFAULTPATH = 'data/apiInfo.default.json'
+const PERSONAL_API_OBJECT = {}
 
 // Create a bot that uses 'polling' to fetch new updates
 var bot = new TelegramBot(config.token, { polling: true })
@@ -72,6 +75,19 @@ if(fs.existsSync(ALARMLISTPATH)){
   alarmList = JSON.parse(fs.readFileSync(ALARMLISTPATH, 'utf8'))
 } else {
   alarmList = JSON.parse(fs.readFileSync(ALARMLISTDEFAULTPATH, 'utf8'))
+}
+
+var apiInfoList
+// for attend info data
+if(fs.existsSync(APIINFOLISTPATH)){
+  apiInfoList = JSON.parse(fs.readFileSync(APIINFOLISTPATH, 'utf8'))
+} else {
+  apiInfoList = JSON.parse(fs.readFileSync(APIINFOLISTDEFAULTPATH, 'utf8'))
+}
+
+// setting personal API Object when init
+for (var index in apiInfoList) {
+  PERSONAL_API_OBJECT[index] = new Coinone(apiInfoList[index].token, apiInfoList[index].key)
 }
 
 const coinoneCurrency = function () {
@@ -280,6 +296,52 @@ const deleteAlarmFromAlarmList = function (message, chatID) {
   }
 }
 
+const registerAPIkey = function (message, chatID) {
+  var messageArray = message.split(' ')
+  console.log(message, messageArray)
+  if(messageArray.length !== 3) {
+    console.warn('registerAPIkey: format is not correct [ message: ' + message + ']')
+    return false
+  }
+  var key = messageArray[1]
+  var token = messageArray[2]
+
+  if (apiInfoList[chatID] === undefined) {
+    apiInfoList[chatID] = {}
+  }
+
+  apiInfoList[chatID]['key'] = key
+  apiInfoList[chatID]['token'] = token
+  
+  PERSONAL_API_OBJECT[chatID] = new Coinone(token, key) // with personal API
+
+  fs.writeFile(APIINFOLISTPATH, JSON.stringify(apiInfoList), (err) => {
+    if (err) {
+      throw err
+    }
+    console.log('The file ' + APIINFOLISTPATH + ' has been saved!')
+  })
+  return true
+}
+
+const showMyAccountInfo = function (chatID) {
+  var resultText = '< MY ACCOUNT INFO >\n'
+  
+  PERSONAL_API_OBJECT[chatID].balance().then(function (response) {
+    var data = response.data
+    resultText += '[KRW] 구매가능: ' + data.krw.avail + ' / 보유수량: ' + data.btc.balance + '\n'
+    resultText += '[BTC] 판매가능: ' + data.btc.avail + ' / 보유수량: ' + data.btc.balance + '\n'
+    resultText += '[BCH] 판매가능: ' + data.bch.avail + ' / 보유수량: ' + data.bch.balance + '\n'
+    resultText += '[ETH] 판매가능: ' + data.eth.avail + ' / 보유수량: ' + data.eth.balance + '\n'
+    resultText += '[ETC] 판매가능: ' + data.etc.avail + ' / 보유수량: ' + data.etc.balance + '\n'
+    resultText += '[XRP] 판매가능: ' + data.xrp.avail + ' / 보유수량: ' + data.xrp.balance + '\n'
+    resultText += '[QTUM] 판매가능: ' + data.qtum.avail + ' / 보유수량: ' + data.qtum.balance + '\n'
+    resultText += '[LTC] 판매가능: ' + data.ltc.avail + ' / 보유수량: ' + data.ltc.balance + '\n'
+    resultText += '[IOTA] 판매가능: ' + data.iota.avail + ' / 보유수량: ' + data.iota.balance
+    bot.sendMessage(chatID, resultText)
+  })
+}
+
 // const serializeObject = function (object) {
 //   if (isEmpty(object)) {
 //     return ''
@@ -459,6 +521,10 @@ bot.on('message', function (msg) {
           }
           bot.sendMessage(chatID, messageText)
         }
+      } else if (/^\/regApiKey/.test(message) || /^API키등록/.test(message)) {
+        registerAPIkey(message, chatID)
+      } else if (/^\/showMyAccount/.test(message) || /^내계좌보기/.test(message)){
+        showMyAccountInfo(chatID)
       }
     }
   } catch (error) {
