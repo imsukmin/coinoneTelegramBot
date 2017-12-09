@@ -329,7 +329,7 @@ const showMyAccountInfo = function (chatID) {
   
   PERSONAL_API_OBJECT[chatID].balance().then(function (response) {
     var data = response.data
-    resultText += '총 보유 금액 : '  + (parseInt(data.krw.balance) 
+    resultText += 'Your total balance : '  + (parseInt(data.krw.balance) 
                                   + parseInt(data.btc.balance) * parseInt(nowCurrency.btc)
                                   + parseInt(data.bch.balance) * parseInt(nowCurrency.bch)
                                   + parseInt(data.eth.balance) * parseInt(nowCurrency.eth)
@@ -338,7 +338,7 @@ const showMyAccountInfo = function (chatID) {
                                   + parseInt(data.qtum.balance) * parseInt(nowCurrency.qtum)
                                   + parseInt(data.ltc.balance) * parseInt(nowCurrency.ltc)
                                   + parseInt(data.iota.balance) * parseInt(nowCurrency.iota))
-    resultText += '\n[통화] 사용가능 / 보유수량\n'
+    resultText += '\n[Currency] 사용가능 / 보유수량\n'
     resultText += '[KRW] ' + data.krw.avail + ' / ' + data.krw.balance + '\n'
     resultText += '[BTC] ' + data.btc.avail + ' / ' + data.btc.balance + '\n'
     resultText += '[BCH] ' + data.bch.avail + ' / ' + data.bch.balance + '\n'
