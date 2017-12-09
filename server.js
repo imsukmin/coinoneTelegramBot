@@ -54,6 +54,17 @@ var nowCurrency = {
 }
 nowCurrency.init()
 
+var beforeCurrency = {
+  btc: 0,
+  bch: 0,
+  eth: 0,
+  etc: 0,
+  xrp: 0,
+  qtum: 0,
+  ltc: 0,
+  iota: 0
+}
+
 // input listener object seem like 'alarmList[coin][price].push(chatID)'
 var alarmList
 // for attend info data
@@ -100,6 +111,15 @@ const coinoneCurrency = function () {
     nowCurrency.qtum = data.qtum.last
     nowCurrency.ltc = data.ltc.last
     nowCurrency.iota = data.iota.last
+
+    beforeCurrency.btc = data.btc.yesterday_last
+    beforeCurrency.bch = data.bch.yesterday_last
+    beforeCurrency.eth = data.eth.yesterday_last
+    beforeCurrency.etc = data.etc.yesterday_last
+    beforeCurrency.xrp = data.xrp.yesterday_last
+    beforeCurrency.qtum = data.qtum.yesterday_last
+    beforeCurrency.ltc = data.ltc.yesterday_last
+    beforeCurrency.iota = data.iota.yesterday_last
     // console.log(data.result, JSON.stringify(alarmList))
   })
   .catch(function (error) {
@@ -347,26 +367,9 @@ setInterval(function() {
   + '\n[LTC]      ' + nowCurrency.ltc + ' (' + ((nowCurrency.ltc - beforeCurrency.ltc) > 0 ? '+' : '') + (nowCurrency.ltc - beforeCurrency.ltc) + ')' 
   + '\n[IOTA]    ' + nowCurrency.iota + ' (' + ((nowCurrency.iota - beforeCurrency.iota) > 0 ? '+' : '') +(nowCurrency.iota - beforeCurrency.iota)  + ')'
   // console.log('currencyNowText', currencyNowText)
-  beforeCurrency.btc = nowCurrency.btc
-  beforeCurrency.bch = nowCurrency.bch
-  beforeCurrency.eth = nowCurrency.eth
-  beforeCurrency.etc = nowCurrency.etc
-  beforeCurrency.xrp = nowCurrency.xrp
-  beforeCurrency.qtum = nowCurrency.qtum
-  beforeCurrency.ltc = nowCurrency.ltc
-  beforeCurrency.iota = nowCurrency.iota
   bot.sendMessage(config.channelID , currencyNowText) // sendMessageTo @channelName
 }, 60 * 1000)
-var beforeCurrency = {
-  btc: 0,
-  bch: 0,
-  eth: 0,
-  etc: 0,
-  xrp: 0,
-  qtum: 0,
-  ltc: 0,
-  iota: 0
-}
+
 
 // Listen for any kind of message. There are different kinds of messages.
 bot.on('message', function (msg) {
