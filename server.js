@@ -338,7 +338,7 @@ const showMyAccountInfo = function (chatID) {
                                   + parseInt(data.qtum.balance) * parseInt(nowCurrency.qtum)
                                   + parseInt(data.ltc.balance) * parseInt(nowCurrency.ltc)
                                   + parseInt(data.iota.balance) * parseInt(nowCurrency.iota))
-    resultText += '\n[Currency] 사용가능 / 보유수량\n'
+    resultText += '\n[Currency] AVAILABLE / BALANCE\n'
     resultText += '[KRW] ' + data.krw.avail + ' / ' + data.krw.balance + '\n'
     resultText += '[BTC] ' + data.btc.avail + ' / ' + data.btc.balance + '\n'
     resultText += '[BCH] ' + data.bch.avail + ' / ' + data.bch.balance + '\n'
