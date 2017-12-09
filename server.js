@@ -329,15 +329,25 @@ const showMyAccountInfo = function (chatID) {
   
   PERSONAL_API_OBJECT[chatID].balance().then(function (response) {
     var data = response.data
-    resultText += '[KRW] 구매가능: ' + data.krw.avail + ' / 보유수량: ' + data.btc.balance + '\n'
-    resultText += '[BTC] 판매가능: ' + data.btc.avail + ' / 보유수량: ' + data.btc.balance + '\n'
-    resultText += '[BCH] 판매가능: ' + data.bch.avail + ' / 보유수량: ' + data.bch.balance + '\n'
-    resultText += '[ETH] 판매가능: ' + data.eth.avail + ' / 보유수량: ' + data.eth.balance + '\n'
-    resultText += '[ETC] 판매가능: ' + data.etc.avail + ' / 보유수량: ' + data.etc.balance + '\n'
-    resultText += '[XRP] 판매가능: ' + data.xrp.avail + ' / 보유수량: ' + data.xrp.balance + '\n'
-    resultText += '[QTUM] 판매가능: ' + data.qtum.avail + ' / 보유수량: ' + data.qtum.balance + '\n'
-    resultText += '[LTC] 판매가능: ' + data.ltc.avail + ' / 보유수량: ' + data.ltc.balance + '\n'
-    resultText += '[IOTA] 판매가능: ' + data.iota.avail + ' / 보유수량: ' + data.iota.balance
+    resultText += '총 보유 금액 : ' + (data.krw.balance 
+                                  + data.btc.balance * nowCurrency.btc
+                                  + data.bch.balance * nowCurrency.bch
+                                  + data.eth.balance * nowCurrency.eth
+                                  + data.etc.balance * nowCurrency.etc
+                                  + data.xrp.balance * nowCurrency.xrp
+                                  + data.qtum.balance * nowCurrency.qtum
+                                  + data.ltc.balance * nowCurrency.ltc
+                                  + data.iota.balance * nowCurrency.iota)
+    resultText += '[통화] 사용가능 / 보유수량\n'
+    resultText += '[KRW] ' + data.krw.avail + ' / ' + data.krw.balance + '\n'
+    resultText += '[BTC] ' + data.btc.avail + ' / ' + data.btc.balance + '\n'
+    resultText += '[BCH] ' + data.bch.avail + ' / ' + data.bch.balance + '\n'
+    resultText += '[ETH] ' + data.eth.avail + ' / ' + data.eth.balance + '\n'
+    resultText += '[ETC] ' + data.etc.avail + ' / ' + data.etc.balance + '\n'
+    resultText += '[XRP] ' + data.xrp.avail + ' / ' + data.xrp.balance + '\n'
+    resultText += '[QTUM] ' + data.qtum.avail + ' / ' + data.qtum.balance + '\n'
+    resultText += '[LTC] ' + data.ltc.avail + ' / ' + data.ltc.balance + '\n'
+    resultText += '[IOTA] ' + data.iota.avail + ' / ' + data.iota.balance
     bot.sendMessage(chatID, resultText)
   })
 }
