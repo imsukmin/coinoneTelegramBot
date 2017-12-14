@@ -1,7 +1,8 @@
 var TelegramBot = require('node-telegram-bot-api'),
     Coinone = require('coinone-api'),
     coinone = new Coinone(), // public API only
-    fs = require('fs')
+    fs = require('fs'),
+    axios = require('axios')
 
 var config = require('./config')
 
@@ -32,6 +33,7 @@ var bot = new TelegramBot(config.token, { polling: true })
 var nowCurrency = {
   btc: 0,
   bch: 0,
+  btg: 0,
   eth: 0,
   etc: 0,
   xrp: 0,
@@ -41,12 +43,12 @@ var nowCurrency = {
   init: function () {
     coinone.ticker('all')
     .then(function (response) {
-      console.log(response)
       if (response === undefined || response.status !== 200) {
         // do Nothing
       } else {
         nowCurrency.btc = response.data.btc.last
         nowCurrency.bch = response.data.bch.last
+        nowCurrency.btg = response.data.btg.last
         nowCurrency.eth = response.data.eth.last
         nowCurrency.etc = response.data.etc.last
         nowCurrency.xrp = response.data.xrp.last
@@ -65,6 +67,7 @@ nowCurrency.init()
 var beforeCurrency = {
   btc: 0,
   bch: 0,
+  btg: 0,
   eth: 0,
   etc: 0,
   xrp: 0,
@@ -82,6 +85,44 @@ var serverStatusVariableReset = function () {
   isSendServerErrorStatus = false
 }
 
+// util
+const isCurrency = function (c) {
+  return (c === 'btc' || c === 'bch' || c === 'eth' || c === 'etc' ||  c === 'xrp' || c === 'qtum' || c === 'ltc' || c === 'iota' || c === 'btg')
+}
+
+const changeCoinNameKoreanToEnglish = function (coinName) {
+  return coinName.replace('비트', 'btc').replace('비캐', 'bch').replace('비골', 'btg')
+                 .replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
+                 .replace('퀀텀', 'qtum').replace('라코', 'ltc').replace('아이오타', 'iota')
+}
+
+// const serializeObject = function (object) {
+//   if (isEmpty(object)) {
+//     return ''
+//   }
+//
+//   var data = [];
+//   for(var p in object) {
+//     if (object.hasOwnProperty(p)) {
+//       data.push(encodeURIComponent(p) + "=" + encodeURIComponent(object[p]))
+//     }
+//   }
+//   return '?' + data.join("&");
+// }
+
+// const isEmpty = function (obj) {
+//     return Object.keys(obj).length === 0;
+// }
+
+// const searchInArray = function (element, targetArray) {
+//   var indices = []
+//   var idx = targetArray.indexOf(element);
+//   while (idx != -1) {
+//     indices.push(idx)
+//     idx = targetArray.indexOf(element, idx + 1)
+//   }
+//   return indices
+// }
 
 // input listener object seem like 'alarmList[coin][price].push(chatID)'
 var alarmList
@@ -150,6 +191,7 @@ const coinoneCurrency = function () {
 
     nowCurrency.btc = data.btc.last
     nowCurrency.bch = data.bch.last
+    nowCurrency.btg = data.btg.last
     nowCurrency.eth = data.eth.last
     nowCurrency.etc = data.etc.last
     nowCurrency.xrp = data.xrp.last
@@ -159,6 +201,7 @@ const coinoneCurrency = function () {
 
     beforeCurrency.btc = data.btc.yesterday_last
     beforeCurrency.bch = data.bch.yesterday_last
+    beforeCurrency.btg = data.btg.yesterday_last
     beforeCurrency.eth = data.eth.yesterday_last
     beforeCurrency.etc = data.etc.yesterday_last
     beforeCurrency.xrp = data.xrp.yesterday_last
@@ -174,7 +217,7 @@ const coinoneCurrency = function () {
 }
 
 const coinoneRecentCompletedOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'qtum' && currency !== 'ltc' && currency !== 'iota' ) {
+  if(isCurrency(currency)) {
     console.warn('coinoneRecentCompletedOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -196,7 +239,7 @@ const coinoneRecentCompletedOrders = function (currency, chatID) {
 }
 
 const coinoneCurrentOrders = function (currency, chatID) {
-  if(currency !== 'btc' && currency !== 'bch' && currency !== 'eth' && currency !== 'etc' && currency !== 'xrp' && currency !== 'qtum' && currency !== 'ltc' && currency !== 'iota' ) {
+  if (isCurrency(currency)) {
     console.warn('coinoneCurrentOrders: currency type is NOT correct! [ currency: ' + currency + ']')
     currency = 'btc'
   }
@@ -231,14 +274,10 @@ const registerAlarm = function (message, chatID) {
     console.warn('registerAlarm: format is not correct [ message: ' + message + ']')
     return false
   }
-  var coin = messageArray[1]
+  var coin = changeCoinNameKoreanToEnglish(messageArray[1])
   var price = parseInt(messageArray[2])
 
-  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
-             .replace('캐시', 'bch').replace('퀀텀', 'qtum').replace('라코', 'ltc').replace('아이오타', 'iota')
-
-  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp' && 
-      coin !== 'bch' && coin !== 'qtum' && coin !== 'ltc' && coin !== 'iota') {
+  if (isCurrency(coin)) {
     console.warn('registerAlarm: coin is NOT correct! [ coin: ' + coin + ']')
     return false
   }
@@ -286,14 +325,10 @@ const deleteAlarmFromAlarmList = function (message, chatID) {
     console.warn('deleteAlarmFromAlarmList: format is not correct [ message: ' + message + ']')
     return 'format'
   }
-  var coin = messageArray[1]
+  var coin = changeCoinNameKoreanToEnglish(messageArray[1])
   var price = parseInt(messageArray[2])
 
-  coin = coin.replace('비트', 'btc').replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
-             .replace('캐시', 'bch').replace('퀀텀', 'qtum').replace('라코', 'ltc').replace('아이오타', 'iota')
-
-  if (coin !== 'btc' && coin !== 'eth' && coin !== 'etc' && coin !== 'xrp' && 
-      coin !== 'bch' && coin !== 'qtum' && coin !== 'ltc' && coin !== 'iota') {
+  if (isCurrency(coin)) {
     console.warn('deleteAlarmFromAlarmList: coin is NOT correct! [ coin: ' + coin + ']')
     return 'coin'
   }
@@ -327,7 +362,7 @@ const deleteAlarmFromAlarmList = function (message, chatID) {
 
 const registerAPIkey = function (message, chatID) {
   var messageArray = message.split(' ')
-  console.log(message, messageArray)
+  // console.log(message, messageArray)
   if(messageArray.length !== 3) {
     console.warn('registerAPIkey: format is not correct [ message: ' + message + ']')
     return false
@@ -353,7 +388,7 @@ const registerAPIkey = function (message, chatID) {
   return true
 }
 
-const showMyAccountInfo = function (chatID) {
+const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
   var resultText = '< MY ACCOUNT INFO >\n'
   
   PERSONAL_API_OBJECT[chatID].balance().then(function (response) {
@@ -367,47 +402,62 @@ const showMyAccountInfo = function (chatID) {
                                   + parseInt(data.qtum.balance) * parseInt(nowCurrency.qtum)
                                   + parseInt(data.ltc.balance) * parseInt(nowCurrency.ltc)
                                   + parseInt(data.iota.balance) * parseInt(nowCurrency.iota))
-    resultText += '\n[Currency] AVAILABLE / BALANCE\n'
-    resultText += '[KRW] ' + data.krw.avail + ' / ' + data.krw.balance + '\n'
-    resultText += '[BTC] ' + data.btc.avail + ' / ' + data.btc.balance + '\n'
-    resultText += '[BCH] ' + data.bch.avail + ' / ' + data.bch.balance + '\n'
-    resultText += '[ETH] ' + data.eth.avail + ' / ' + data.eth.balance + '\n'
-    resultText += '[ETC] ' + data.etc.avail + ' / ' + data.etc.balance + '\n'
-    resultText += '[XRP] ' + data.xrp.avail + ' / ' + data.xrp.balance + '\n'
-    resultText += '[QTUM] ' + data.qtum.avail + ' / ' + data.qtum.balance + '\n'
-    resultText += '[LTC] ' + data.ltc.avail + ' / ' + data.ltc.balance + '\n'
-    resultText += '[IOTA] ' + data.iota.avail + ' / ' + data.iota.balance
+    if(!isOnlyShowTotal) {
+      resultText += '\n[Currency] AVAILABLE / BALANCE\n'
+      resultText += '[KRW] ' + data.krw.avail + ' / ' + data.krw.balance + '\n'
+      resultText += '[BTC] ' + data.btc.avail + ' / ' + data.btc.balance + '\n'
+      resultText += '[BCH] ' + data.bch.avail + ' / ' + data.bch.balance + '\n'
+      resultText += '[BTG] ' + data.btg.avail + ' / ' + data.btg.balance + '\n'
+      resultText += '[ETH] ' + data.eth.avail + ' / ' + data.eth.balance + '\n'
+      resultText += '[ETC] ' + data.etc.avail + ' / ' + data.etc.balance + '\n'
+      resultText += '[XRP] ' + data.xrp.avail + ' / ' + data.xrp.balance + '\n'
+      resultText += '[QTUM] ' + data.qtum.avail + ' / ' + data.qtum.balance + '\n'
+      resultText += '[LTC] ' + data.ltc.avail + ' / ' + data.ltc.balance + '\n'
+      resultText += '[IOTA] ' + data.iota.avail + ' / ' + data.iota.balance
+    }
     bot.sendMessage(chatID, resultText)
   })
 }
 
-// const serializeObject = function (object) {
-//   if (isEmpty(object)) {
-//     return ''
-//   }
-//
-//   var data = [];
-//   for(var p in object) {
-//     if (object.hasOwnProperty(p)) {
-//       data.push(encodeURIComponent(p) + "=" + encodeURIComponent(object[p]))
-//     }
-//   }
-//   return '?' + data.join("&");
-// }
-
-// const isEmpty = function (obj) {
-//     return Object.keys(obj).length === 0;
-// }
-
-// const searchInArray = function (element, targetArray) {
-//   var indices = []
-//   var idx = targetArray.indexOf(element);
-//   while (idx != -1) {
-//     indices.push(idx)
-//     idx = targetArray.indexOf(element, idx + 1)
-//   }
-//   return indices
-// }
+const sendNowCurrencyToChannel = function() {
+  const chartUpEmoji = '\xF0\x9F\x93\x88'
+  const chartDownEmoji = '\xF0\x9F\x93\x89'
+  var currencyNowText 
+  if (isServerGood && !isSendServerErrorStatus) {
+    var isUp = {
+      btc: (nowCurrency.btc - beforeCurrency.btc) > 0,
+      bch: (nowCurrency.bch - beforeCurrency.bch) > 0,
+      btg: (nowCurrency.btg - beforeCurrency.btg) > 0,
+      eth: (nowCurrency.eth - beforeCurrency.eth) > 0,
+      etc: (nowCurrency.etc - beforeCurrency.etc) > 0,
+      xrp: (nowCurrency.xrp - beforeCurrency.xrp) > 0,
+      qtum: (nowCurrency.qtum - beforeCurrency.qtum) > 0,
+      ltc: (nowCurrency.ltc - beforeCurrency.ltc) > 0,
+      iota: (nowCurrency.iota - beforeCurrency.iota) > 0
+    }
+    currencyNowText = (isUp.btc ? chartUpEmoji : chartDownEmoji) + '*BTC*      ' + nowCurrency.btc + ' (' + (isUp.btc ? '+`' : '`') + (nowCurrency.btc - beforeCurrency.btc) + '`)' 
+                  + '\n' + (isUp.bch ? chartUpEmoji : chartDownEmoji) + '*BCH*      ' + nowCurrency.bch + ' (' + (isUp.bch ? '+`' : '`') + (nowCurrency.bch - beforeCurrency.bch) + '`)' 
+                  + '\n' + (isUp.btg ? chartUpEmoji : chartDownEmoji) + '*BTG*      ' + nowCurrency.btg + ' (' + (isUp.btg ? '+`' : '`') + (nowCurrency.btg - beforeCurrency.btg) + '`)' 
+                  + '\n' + (isUp.eth ? chartUpEmoji : chartDownEmoji) + '*ETH*      ' + nowCurrency.eth + ' (' + (isUp.eth ? '+`' : '`') + (nowCurrency.eth - beforeCurrency.eth) + '`)' 
+                  + '\n' + (isUp.etc ? chartUpEmoji : chartDownEmoji) + '*ETC*       ' + nowCurrency.etc + ' (' + (isUp.etc ? '+`' : '`') + (nowCurrency.etc - beforeCurrency.etc) + '`)' 
+                  + '\n' + (isUp.xrp ? chartUpEmoji : chartDownEmoji) + '*XRP*      ' + nowCurrency.xrp + ' (' + (isUp.xrp ? '+`' : '`') + (nowCurrency.xrp - beforeCurrency.xrp) + '`)' 
+                  + '\n' + (isUp.qtum ? chartUpEmoji : chartDownEmoji) + '*QTUM*  ' + nowCurrency.qtum + ' (' + (isUp.qtum ? '+`' : '`') + (nowCurrency.qtum - beforeCurrency.qtum) + '`)' 
+                  + '\n' + (isUp.ltc ? chartUpEmoji : chartDownEmoji) + '*LTC*       ' + nowCurrency.ltc + ' (' + (isUp.ltc ? '+`' : '`') + (nowCurrency.ltc - beforeCurrency.ltc) + '`)' 
+                  + '\n' + (isUp.iota ? chartUpEmoji : chartDownEmoji) + '*IOTA*     ' + nowCurrency.iota + ' (' + (isUp.iota ? '+`' : '`') +(nowCurrency.iota - beforeCurrency.iota)  + '`)'
+    var url = 'https://api.telegram.org/bot' + config.token + '/sendMessage?chat_id=@coinoneNow&parse_mode=Markdown&disable_notification=true&text=' + currencyNowText
+    axios.get(url)
+    // .then(function (response) {
+    //   console.log(response)
+    // })
+  } else if(!isServerGood && !isSendServerErrorStatus) {
+    isSendServerErrorStatus = true
+    bot.sendMessage(config.channelID , '코인원 API 서버가 정상작동하지 않아 비교정보를 보낼 수 없습니다.') // sendMessageTo @channelName
+    return
+  } else {
+    // nothing
+  }
+  // console.log('currencyNowText', currencyNowText)
+}
 
 // system message
 const sendHelpMessage = function (chatID) {
@@ -415,6 +465,7 @@ const sendHelpMessage = function (chatID) {
                         + '/help : 현재 보고 계시는 명령어를 보실 수 있습니다.\n'
                         + '/btcnow : 비트코인의 현재가격을 보여줍니다.\n'
                         + '/bchnow : 비트코인캐시의 현재가격을 보여줍니다.\n'
+                        + '/btgnow : 비트코인골드의 현재가격을 보여줍니다.\n'
                         + '/ethnow : 이더리움의 현재가격을 보여줍니다.\n'
                         + '/etcnow : 이더리움클래식의 현재가격을 보여줍니다.\n'
                         + '/xrpnow : 리플의 현재가격을 보여줍니다.\n'
@@ -423,6 +474,7 @@ const sendHelpMessage = function (chatID) {
                         + '/iotanow : 아이오타의 현재가격을 보여줍니다.\n'
                         + '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/bchtraded : 비트코인캐시의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/btgtraded : 비트코인골드의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/ethtraded : 이더리움의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/etctraded : 이더리움클래식의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/xrptraded : 리플의 최근 거래내역 10개를 보여줍니다.\n'
@@ -431,6 +483,7 @@ const sendHelpMessage = function (chatID) {
                         + '/iotatraded : 아이오타의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
                         + '/bchorder : 비트코인캐시의 현재 시장상황을 보여줍니다.\n'
+                        + '/btgorder : 비트코인골드의 현재 시장상황을 보여줍니다.\n'
                         + '/ethorder : 이더리움의 현재 시장상황을 보여줍니다.\n'
                         + '/etcorder : 이더리움클래식의 현재 시장상황을 보여줍니다.\n'
                         + '/xrporder : 리플의 현재 시장상황을 보여줍니다.\n'
@@ -445,10 +498,10 @@ const sendHelpMessage = function (chatID) {
   bot.sendMessage(chatID, sendMessageText, {
       reply_markup: {
         keyboard: [
-          [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/ethnow'}],
-          [{text: '/etcnow'}, {text: '/xrpnow'}, {text: '/qtumnow'}],
-          [{text: '/ltcnow'}, {text: '/iotanow'}],
-          [{text: '/help'}, {text: '알람확인'}, {text: '내계좌보기'}],
+          [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/btgnow'}],
+          [{text: '/ethnow'}, {text: '/etcnow'}, {text: '/xrpnow'}],
+          [{text: '/qtumnow'}, {text: '/ltcnow'}, {text: '/iotanow'}],
+          [{text: '/help'}, {text: '알람확인'}, {text: '내돈확인'}],
         ],
         resize_keyboard: true
       }
@@ -456,29 +509,10 @@ const sendHelpMessage = function (chatID) {
 } 
 
 setInterval(coinoneCurrency, 1000 * 2.5)
-
-setInterval(function() {
-  var currencyNowText 
-  if (isServerGood && !isSendServerErrorStatus) {
-    currencyNowText = '[BTC]     ' + nowCurrency.btc + ' (' + ((nowCurrency.btc - beforeCurrency.btc) > 0 ? '+' : '') + (nowCurrency.btc - beforeCurrency.btc) + ')' 
-                  + '\n[BCH]     ' + nowCurrency.bch + ' (' + ((nowCurrency.bch - beforeCurrency.bch) > 0 ? '+' : '') + (nowCurrency.bch - beforeCurrency.bch) + ')' 
-                  + '\n[ETH]      ' + nowCurrency.eth + ' (' + ((nowCurrency.eth - beforeCurrency.eth) > 0 ? '+' : '') + (nowCurrency.eth - beforeCurrency.eth) + ')' 
-                  + '\n[ETC]      ' + nowCurrency.etc + ' (' + ((nowCurrency.etc - beforeCurrency.etc) > 0 ? '+' : '') + (nowCurrency.etc - beforeCurrency.etc) + ')' 
-                  + '\n[XRP]      ' + nowCurrency.xrp + ' (' + ((nowCurrency.xrp - beforeCurrency.xrp) > 0 ? '+' : '') + (nowCurrency.xrp - beforeCurrency.xrp) + ')' 
-                  + '\n[QTUM] ' + nowCurrency.qtum + ' (' + ((nowCurrency.qtum - beforeCurrency.qtum) > 0 ? '+' : '') + (nowCurrency.qtum - beforeCurrency.qtum) + ')' 
-                  + '\n[LTC]      ' + nowCurrency.ltc + ' (' + ((nowCurrency.ltc - beforeCurrency.ltc) > 0 ? '+' : '') + (nowCurrency.ltc - beforeCurrency.ltc) + ')' 
-                  + '\n[IOTA]    ' + nowCurrency.iota + ' (' + ((nowCurrency.iota - beforeCurrency.iota) > 0 ? '+' : '') +(nowCurrency.iota - beforeCurrency.iota)  + ')'
-    bot.sendMessage(config.channelID , currencyNowText) // sendMessageTo @channelName
-  } else if(!isServerGood && !isSendServerErrorStatus) {
-    isSendServerErrorStatus = true
-    bot.sendMessage(config.channelID , '코인원 API 서버가 정상작동하지 않아 비교정보를 보낼 수 없습니다.') // sendMessageTo @channelName
-    return
-  } else {
-    // nothing
-  }
-  
-  // console.log('currencyNowText', currencyNowText)
-}, 60 * 1000)
+setTimeout(function () {
+  sendNowCurrencyToChannel()
+}, 3000)
+setInterval(sendNowCurrencyToChannel, 60 * 1000)
 
 
 // Listen for any kind of message. There are different kinds of messages.
@@ -495,7 +529,9 @@ bot.on('message', function (msg) {
       // if (msg.from.last_name !== undefined){
       //   name = name + ' ' + msg.from.last_name
       // }
-
+      if (!isServerGood) {
+        bot.sendMessage(chatID, 'Coinone API Server Status: [NOT GOOD]')
+      }
       if (/\/start/.test(message)) {
         sendHelpMessage(msg.chat.id)
       } else if (/\/help/.test(message)) {
@@ -504,6 +540,8 @@ bot.on('message', function (msg) {
         bot.sendMessage(chatID, 'BTC now currenct: ' + nowCurrency.btc)
       } else if (/\/bchnow/.test(message)) {
         bot.sendMessage(chatID, 'BCH now currenct: ' + nowCurrency.bch)
+      } else if (/\/btgnow/.test(message)) {
+        bot.sendMessage(chatID, 'BTG now currenct: ' + nowCurrency.bch)
       } else if (/\/ethnow/.test(message)) {
         bot.sendMessage(chatID, 'ETH now currenct: ' + nowCurrency.eth)
       } else if (/\/etcnow/.test(message)) {
@@ -520,6 +558,8 @@ bot.on('message', function (msg) {
         coinoneRecentCompletedOrders('btc', chatID)
       } else if (/\/bchtraded/.test(message)) {
         coinoneRecentCompletedOrders('bch', chatID)
+      } else if (/\/btgtraded/.test(message)) {
+        coinoneRecentCompletedOrders('btg', chatID)
       } else if (/\/ethtraded/.test(message)) {
         coinoneRecentCompletedOrders('eth', chatID)
       } else if (/\/etctraded/.test(message)) {
@@ -536,6 +576,8 @@ bot.on('message', function (msg) {
         coinoneCurrentOrders('btc', chatID)
       } else if (/\/bchorder/.test(message)) {
         coinoneCurrentOrders('bch', chatID)
+      } else if (/\/btgorder/.test(message)) {
+        coinoneCurrentOrders('btg', chatID)
       } else if (/\/ethorder/.test(message)) {
         coinoneCurrentOrders('eth', chatID)
       } else if (/\/etcorder/.test(message)) {
@@ -554,7 +596,7 @@ bot.on('message', function (msg) {
         if (registerAlarm(message, chatID)) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
-          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/bch/eth/etc/xrp/qtum/ltc/iota" "price"] or\n[알람등록 "비트/캐시/이클/이더/리플/퀀텀/라코/아이오타" "가격"]')
+          bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/bch/eth/etc/xrp/qtum/ltc/iota" "price"] or\n[알람등록 "비트/비캐/비골/이클/이더/리플/퀀텀/라코/아이오타" "가격"]')
         }
       } else if (/deleteAlarm/.test(message) || /알람삭제/.test(message)) {
         var result = deleteAlarmFromAlarmList(message, chatID)
@@ -563,7 +605,7 @@ bot.on('message', function (msg) {
         } else {
           var messageText = 'FAIL: delete alarm.\n'
           if(result === 'format' || result === 'coin' || result === 'price') {
-            messageText += 'checkout your commend set\n[deleteAlarm "btc/bch/eth/etc/xrp/qtum/ltc/iota" "price"] or\n[알람삭제 "비트/캐시/이클/이더/리플/퀀텀/라코/아이오타" "가격"]'
+            messageText += 'checkout your commend set\n[deleteAlarm "btc/bch/eth/etc/xrp/qtum/ltc/iota" "price"] or\n[알람삭제 "비트/비캐/비골/이클/이더/리플/퀀텀/라코/아이오타" "가격"]'
           } else if (result === 'not found') {
             messageText += 'alarm in commend is not registered\n' + searchInAlarmList(chatID)
           }
@@ -571,8 +613,10 @@ bot.on('message', function (msg) {
         }
       } else if (/^\/regApiKey/.test(message) || /^API키등록/.test(message)) {
         registerAPIkey(message, chatID)
-      } else if (/^\/showMyAccount/.test(message) || /^내계좌보기/.test(message)){
+      } else if (/^\/showMyAccount/.test(message) || /^내계좌보기/.test(message) || /^내계좌확인/.test(message)){
         showMyAccountInfo(chatID)
+      } else if (/^\/showMyAccount/.test(message) || /^내계좌보기/.test(message) || /^내계좌확인/.test(message)){
+        showMyAccountInfo(chatID, true)
       }
     }
   } catch (error) {
