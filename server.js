@@ -41,7 +41,8 @@ var nowCurrency = {
   init: function () {
     coinone.ticker('all')
     .then(function (response) {
-      if (response === undefined || response.response.status !== 200) {
+      console.log(response)
+      if (response === undefined || response.status !== 200) {
         // do Nothing
       } else {
         nowCurrency.btc = response.data.btc.last
@@ -107,7 +108,7 @@ for (var index in apiInfoList) {
 const coinoneCurrency = function () {
   coinone.ticker('all')
   .then(function (response) {
-    if(response === undefined || response.response.status !== 200) {
+    if(response === undefined || response.status !== 200) {
       if (isServerGood) {
         isServerGood = false
         console.log('!==API ERROR==!')
