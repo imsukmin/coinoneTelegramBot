@@ -41,17 +41,21 @@ var nowCurrency = {
   init: function () {
     coinone.ticker('all')
     .then(function (response) {
-      nowCurrency.btc = response.data.btc.last
-      nowCurrency.bch = response.data.bch.last
-      nowCurrency.eth = response.data.eth.last
-      nowCurrency.etc = response.data.etc.last
-      nowCurrency.xrp = response.data.xrp.last
-      nowCurrency.qtum = response.data.qtum.last
-      nowCurrency.ltc = response.data.ltc.last
-      nowCurrency.iota = response.data.iota.last
+      if (response === undefined || response.response.status !== 200) {
+        // do Nothing
+      } else {
+        nowCurrency.btc = response.data.btc.last
+        nowCurrency.bch = response.data.bch.last
+        nowCurrency.eth = response.data.eth.last
+        nowCurrency.etc = response.data.etc.last
+        nowCurrency.xrp = response.data.xrp.last
+        nowCurrency.qtum = response.data.qtum.last
+        nowCurrency.ltc = response.data.ltc.last
+        nowCurrency.iota = response.data.iota.last
+      }
     })
     .catch(function (error) {
-      console.log('[nowCurrency.init]',error);
+      console.log('[nowCurrency.init]', error);
     })
   }
 }
@@ -67,6 +71,16 @@ var beforeCurrency = {
   ltc: 0,
   iota: 0
 }
+
+var isServerGood = true
+var serverErrorCounter = 0
+var isSendServerErrorStatus = false
+var serverStatusVariableReset = function () {
+  isServerGood = true
+  serverErrorCounter = 0
+  isSendServerErrorStatus = false
+}
+
 
 // input listener object seem like 'alarmList[coin][price].push(chatID)'
 var alarmList
@@ -93,11 +107,25 @@ for (var index in apiInfoList) {
 const coinoneCurrency = function () {
   coinone.ticker('all')
   .then(function (response) {
-    if(response === undefined) {
-      console.log('!==API ERROR==!')
-      bot.sendMessage(config.adminAccountID, '[coinoneCurrency] ticker is block!')
+    if(response === undefined || response.response.status !== 200) {
+      if (isServerGood) {
+        isServerGood = false
+        console.log('!==API ERROR==!')
+        bot.sendMessage(config.adminAccountID, '[coinoneCurrency] ticker is block!')
+      } else {
+        if (serverErrorCounter > 60) {
+          isServerGood = true
+          serverErrorCounter = 0
+        }
+        serverErrorCounter += 1
+      }
       return
     }
+    if (!isServerGood) {
+      serverStatusVariableReset()
+      bot.sendMessage(config.adminAccountID, '[coinoneCurrency] Server status is now OK')
+    }
+
     var data = response.data
     for (var coin in alarmList) {
       for (var price in alarmList[coin]) {
@@ -139,7 +167,7 @@ const coinoneCurrency = function () {
     // console.log(data.result, JSON.stringify(alarmList))
   })
   .catch(function (error) {
-    console.log('[coinoneCurrency]',error);
+    console.log('[coinoneCurrency]', error)
     // bot.sendMessage(config.adminAccountID, '[coinoneCurrency] ticker is error!')
   })
 }
@@ -418,28 +446,37 @@ const sendHelpMessage = function (chatID) {
         keyboard: [
           [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/ethnow'}],
           [{text: '/etcnow'}, {text: '/xrpnow'}, {text: '/qtumnow'}],
-          [{text: '/ltcnow'}, {text: '/iotanow'}, {text: '알람확인'}],
-          [{text: '/help'}],
+          [{text: '/ltcnow'}, {text: '/iotanow'}],
+          [{text: '/help'}, {text: '알람확인'}, {text: '내계좌보기'}],
         ],
         resize_keyboard: true
       }
     })
 } 
 
-setInterval(coinoneCurrency, 1000*2.5)
+setInterval(coinoneCurrency, 1000 * 2.5)
 
 setInterval(function() {
-  var currencyNowText = 
-  '[BTC]     ' + nowCurrency.btc + ' (' + ((nowCurrency.btc - beforeCurrency.btc) > 0 ? '+' : '') + (nowCurrency.btc - beforeCurrency.btc) + ')' 
-  + '\n[BCH]     ' + nowCurrency.bch + ' (' + ((nowCurrency.bch - beforeCurrency.bch) > 0 ? '+' : '') + (nowCurrency.bch - beforeCurrency.bch) + ')' 
-  + '\n[ETH]      ' + nowCurrency.eth + ' (' + ((nowCurrency.eth - beforeCurrency.eth) > 0 ? '+' : '') + (nowCurrency.eth - beforeCurrency.eth) + ')' 
-  + '\n[ETC]      ' + nowCurrency.etc + ' (' + ((nowCurrency.etc - beforeCurrency.etc) > 0 ? '+' : '') + (nowCurrency.etc - beforeCurrency.etc) + ')' 
-  + '\n[XRP]      ' + nowCurrency.xrp + ' (' + ((nowCurrency.xrp - beforeCurrency.xrp) > 0 ? '+' : '') + (nowCurrency.xrp - beforeCurrency.xrp) + ')' 
-  + '\n[QTUM] ' + nowCurrency.qtum + ' (' + ((nowCurrency.qtum - beforeCurrency.qtum) > 0 ? '+' : '') + (nowCurrency.qtum - beforeCurrency.qtum) + ')' 
-  + '\n[LTC]      ' + nowCurrency.ltc + ' (' + ((nowCurrency.ltc - beforeCurrency.ltc) > 0 ? '+' : '') + (nowCurrency.ltc - beforeCurrency.ltc) + ')' 
-  + '\n[IOTA]    ' + nowCurrency.iota + ' (' + ((nowCurrency.iota - beforeCurrency.iota) > 0 ? '+' : '') +(nowCurrency.iota - beforeCurrency.iota)  + ')'
+  var currencyNowText 
+  if (isServerGood && !isSendServerErrorStatus) {
+    currencyNowText = '[BTC]     ' + nowCurrency.btc + ' (' + ((nowCurrency.btc - beforeCurrency.btc) > 0 ? '+' : '') + (nowCurrency.btc - beforeCurrency.btc) + ')' 
+                  + '\n[BCH]     ' + nowCurrency.bch + ' (' + ((nowCurrency.bch - beforeCurrency.bch) > 0 ? '+' : '') + (nowCurrency.bch - beforeCurrency.bch) + ')' 
+                  + '\n[ETH]      ' + nowCurrency.eth + ' (' + ((nowCurrency.eth - beforeCurrency.eth) > 0 ? '+' : '') + (nowCurrency.eth - beforeCurrency.eth) + ')' 
+                  + '\n[ETC]      ' + nowCurrency.etc + ' (' + ((nowCurrency.etc - beforeCurrency.etc) > 0 ? '+' : '') + (nowCurrency.etc - beforeCurrency.etc) + ')' 
+                  + '\n[XRP]      ' + nowCurrency.xrp + ' (' + ((nowCurrency.xrp - beforeCurrency.xrp) > 0 ? '+' : '') + (nowCurrency.xrp - beforeCurrency.xrp) + ')' 
+                  + '\n[QTUM] ' + nowCurrency.qtum + ' (' + ((nowCurrency.qtum - beforeCurrency.qtum) > 0 ? '+' : '') + (nowCurrency.qtum - beforeCurrency.qtum) + ')' 
+                  + '\n[LTC]      ' + nowCurrency.ltc + ' (' + ((nowCurrency.ltc - beforeCurrency.ltc) > 0 ? '+' : '') + (nowCurrency.ltc - beforeCurrency.ltc) + ')' 
+                  + '\n[IOTA]    ' + nowCurrency.iota + ' (' + ((nowCurrency.iota - beforeCurrency.iota) > 0 ? '+' : '') +(nowCurrency.iota - beforeCurrency.iota)  + ')'
+    bot.sendMessage(config.channelID , currencyNowText) // sendMessageTo @channelName
+  } else if(!isServerGood && !isSendServerErrorStatus) {
+    isSendServerErrorStatus = true
+    bot.sendMessage(config.channelID , '코인원 API 서버가 정상작동하지 않아 비교정보를 보낼 수 없습니다.') // sendMessageTo @channelName
+    return
+  } else {
+    // nothing
+  }
+  
   // console.log('currencyNowText', currencyNowText)
-  bot.sendMessage(config.channelID , currencyNowText) // sendMessageTo @channelName
 }, 60 * 1000)
 
 
