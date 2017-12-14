@@ -615,7 +615,7 @@ bot.on('message', function (msg) {
         registerAPIkey(message, chatID)
       } else if (/^\/showMyAccount/.test(message) || /^내계좌보기/.test(message) || /^내계좌확인/.test(message)){
         showMyAccountInfo(chatID)
-      } else if (/^\/showMyAccount/.test(message) || /^내계좌보기/.test(message) || /^내계좌확인/.test(message)){
+      } else if (/^\/내돈확인/.test(message)){
         showMyAccountInfo(chatID, true)
       }
     }
