@@ -29,7 +29,67 @@ const PERSONAL_API_OBJECT = {}
 // Create a bot that uses 'polling' to fetch new updates
 var bot = new TelegramBot(config.token, { polling: true })
 
+class Currency {
+  constructor(now, before) {
+    this._now = now
+    this._before = before
+  }
+  set now(newData) {
+    this._now = newData
+  }
+  set before(newData) {
+    this._before = newData
+  }
+  get now() {
+    return this._now
+  }
+  get before() {
+    return this._before
+  }
+  get deltaPrice () {
+    return (this._now - this._before)
+  }
+  get deltaRate () {
+    return (this._now - this._before) / this._now * 100
+  }
+  get isUp() {
+    return (this._now - this._before) > 0
+  }
+}
+
 // global list
+const currencys = {
+  btc: new Currency(0, 0),
+  bch: new Currency(0, 0),
+  btg: new Currency(0, 0),
+  eth: new Currency(0, 0),
+  etc: new Currency(0, 0),
+  xrp: new Currency(0, 0),
+  qtum: new Currency(0, 0),
+  ltc: new Currency(0, 0),
+  iota: new Currency(0, 0),
+  update: (apiData) => {
+    currencys.btc.now = parseInt(apiData.btc.last)
+    currencys.btc.before = parseInt(apiData.btc.yesterday_last)
+    currencys.bch.now = parseInt(apiData.bch.last)
+    currencys.bch.before = parseInt(apiData.bch.yesterday_last)
+    currencys.btg.now = parseInt(apiData.btg.last)
+    currencys.btg.before = parseInt(apiData.btg.yesterday_last)
+    currencys.eth.now = parseInt(apiData.eth.last)
+    currencys.eth.before = parseInt(apiData.eth.yesterday_last)
+    currencys.etc.now = parseInt(apiData.etc.last)
+    currencys.etc.before = parseInt(apiData.etc.yesterday_last)
+    currencys.xrp.now = parseInt(apiData.xrp.last)
+    currencys.xrp.before = parseInt(apiData.xrp.yesterday_last)
+    currencys.qtum.now = parseInt(apiData.qtum.last)
+    currencys.qtum.before = parseInt(apiData.qtum.yesterday_last)
+    currencys.ltc.now = parseInt(apiData.ltc.last)
+    currencys.ltc.before = parseInt(apiData.ltc.yesterday_last)
+    currencys.iota.now = parseInt(apiData.iota.last)
+    currencys.iota.before = parseInt(apiData.iota.yesterday_last)
+  }
+}
+
 var nowCurrency = {
   btc: 0,
   bch: 0,
@@ -55,6 +115,8 @@ var nowCurrency = {
         nowCurrency.qtum = response.data.qtum.last
         nowCurrency.ltc = response.data.ltc.last
         nowCurrency.iota = response.data.iota.last
+        
+        currencys.update(response.data)
       }
     })
     .catch(function (error) {
@@ -189,6 +251,8 @@ const coinoneCurrency = function () {
         }
       }
     }
+
+    currencys.update(data)
 
     nowCurrency.btc = data.btc.last
     nowCurrency.bch = data.bch.last
@@ -394,61 +458,59 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
   
   PERSONAL_API_OBJECT[chatID].balance().then(function (response) {
     var data = response.data
-    resultText += 'Your total balance : '  + (parseInt(data.krw.balance) 
-                                  + parseInt(data.btc.balance) * parseInt(nowCurrency.btc)
-                                  + parseInt(data.bch.balance) * parseInt(nowCurrency.bch)
-                                  // + parseInt(data.btg.balance) * parseInt(nowCurrency.btg) // can not use btg checked at 20171215
-                                  + parseInt(data.eth.balance) * parseInt(nowCurrency.eth)
-                                  + parseInt(data.etc.balance) * parseInt(nowCurrency.etc)
-                                  + parseInt(data.xrp.balance) * parseInt(nowCurrency.xrp)
-                                  + parseInt(data.qtum.balance) * parseInt(nowCurrency.qtum)
-                                  + parseInt(data.ltc.balance) * parseInt(nowCurrency.ltc)
-                                  + parseInt(data.iota.balance) * parseInt(nowCurrency.iota))
+    var totalBalance = (parseInt(data.krw.balance) 
+    + parseInt(data.btc.balance) * parseInt(nowCurrency.btc)
+    + parseInt(data.bch.balance) * parseInt(nowCurrency.bch)
+    // + parseInt(data.btg.balance) * parseInt(nowCurrency.btg) // can not use btg checked at 20171215
+    + parseInt(data.eth.balance) * parseInt(nowCurrency.eth)
+    + parseInt(data.etc.balance) * parseInt(nowCurrency.etc)
+    + parseInt(data.xrp.balance) * parseInt(nowCurrency.xrp)
+    + parseInt(data.qtum.balance) * parseInt(nowCurrency.qtum)
+    + parseInt(data.ltc.balance) * parseInt(nowCurrency.ltc)
+    + parseInt(data.iota.balance) * parseInt(nowCurrency.iota))
+    resultText += 'Your total balance : ₩'  + totalBalance  + '\n'
     if(!isOnlyShowTotal) {
-      resultText += '\n[Currency] AVAILABLE / BALANCE\n'
-      resultText += '[KRW] ' + data.krw.avail + ' / ' + data.krw.balance + '\n'
-      resultText += '[BTC] ' + data.btc.avail + ' / ' + data.btc.balance + '\n'
-      resultText += '[BCH] ' + data.bch.avail + ' / ' + data.bch.balance + '\n'
-      // resultText += '[BTG] ' + data.btg.avail + ' / ' + data.btg.balance + '\n' // can not use btg  checked at 20171215
-      resultText += '[ETH] ' + data.eth.avail + ' / ' + data.eth.balance + '\n'
-      resultText += '[ETC] ' + data.etc.avail + ' / ' + data.etc.balance + '\n'
-      resultText += '[XRP] ' + data.xrp.avail + ' / ' + data.xrp.balance + '\n'
-      resultText += '[QTUM] ' + data.qtum.avail + ' / ' + data.qtum.balance + '\n'
-      resultText += '[LTC] ' + data.ltc.avail + ' / ' + data.ltc.balance + '\n'
-      resultText += '[IOTA] ' + data.iota.avail + ' / ' + data.iota.balance
+      resultText += '[BTC]     ₩' + parseInt(data.btc.balance * currencys.btc.now).toLocaleString() + ' / ' 
+                             + data.btc.balance + '\n'
+      resultText += '[BCH]    ₩' + parseInt(data.bch.balance * currencys.bch.now).toLocaleString() + ' / ' 
+                             + data.bch.balance + '\n'
+      // resultText += '[BTG]    ₩' parseInt(+ data.btg.balance * currencys.btg.).toLocaleString()now + ' / ' 
+      //                        + data.btg.balance + '\n' // can not use btg  checked at 20171215
+      resultText += '[ETH]     ₩' + parseInt(data.eth.balance * currencys.eth.now).toLocaleString() + ' / ' 
+                             + data.eth.balance + '\n'
+      resultText += '[ETC]     ₩' + parseInt(data.etc.balance * currencys.etc.now).toLocaleString() + ' / ' 
+                             + data.etc.balance + '\n'
+      resultText += '[XRP]     ₩' + parseInt(data.xrp.balance * currencys.xrp.now).toLocaleString() + ' / ' 
+                             + data.xrp.balance + '\n'
+      resultText += '[QTUM] ₩' + parseInt(data.qtum.balance * currencys.qtum.now).toLocaleString() + ' / ' 
+                             + data.qtum.balance + '\n'
+      resultText += '[LTC]     ₩' + parseInt(data.ltc.balance * currencys.ltc.now).toLocaleString() + ' / ' 
+                             + data.ltc.balance + '\n'
+      resultText += '[IOTA]   ₩' + parseInt(data.iota.balance * currencys.iota.now).toLocaleString() + ' / ' 
+                             + data.iota.balance
     }
     bot.sendMessage(chatID, resultText)
   }).catch(function(error) {
+    console.log(error)
     bot.sendMessage(chatID, '[showMyAccountInfo] API TOKEN or API KEY is WRONG')
   })
 }
 
 const sendNowCurrencyToChannel = function() {
-  const chartUpEmoji = '\xF0\x9F\x93\x88'
-  const chartDownEmoji = '\xF0\x9F\x93\x89'
-  var currencyNowText 
   if (isServerGood && !isSendServerErrorStatus) {
-    var isUp = {
-      btc: (nowCurrency.btc - beforeCurrency.btc) > 0,
-      bch: (nowCurrency.bch - beforeCurrency.bch) > 0,
-      btg: (nowCurrency.btg - beforeCurrency.btg) > 0,
-      eth: (nowCurrency.eth - beforeCurrency.eth) > 0,
-      etc: (nowCurrency.etc - beforeCurrency.etc) > 0,
-      xrp: (nowCurrency.xrp - beforeCurrency.xrp) > 0,
-      qtum: (nowCurrency.qtum - beforeCurrency.qtum) > 0,
-      ltc: (nowCurrency.ltc - beforeCurrency.ltc) > 0,
-      iota: (nowCurrency.iota - beforeCurrency.iota) > 0
+    var currencyNowText = ''
+    for ( var key in currencys ) {
+      if (key === 'update') {
+        continue;
+      }
+      let value = currencys[key]
+      let isUP = value.isUp
+      let valueSign = isUP ? '%2B' : '-' // %2B === '+'
+      let percent = Math.abs(value.deltaRate).toFixed(2)
+      
+      currencyNowText += makeNowText( isUP, valueSign + percent + ' '.repeat(7 - percent.length), key.toUpperCase() + ' '.repeat(key === 'qtum' ? 1 : (key === 'iota' ? 4 : 6)), value.now, valueSign + Math.abs(value.deltaPrice))
     }
-    currencyNowText = (isUp.btc ? chartUpEmoji : chartDownEmoji) + '*BTC*      ' + nowCurrency.btc + ' (' + (isUp.btc ? '+`' : '`') + (nowCurrency.btc - beforeCurrency.btc) + '`)' 
-                  + '\n' + (isUp.bch ? chartUpEmoji : chartDownEmoji) + '*BCH*      ' + nowCurrency.bch + ' (' + (isUp.bch ? '+`' : '`') + (nowCurrency.bch - beforeCurrency.bch) + '`)' 
-                  + '\n' + (isUp.btg ? chartUpEmoji : chartDownEmoji) + '*BTG*      ' + nowCurrency.btg + ' (' + (isUp.btg ? '+`' : '`') + (nowCurrency.btg - beforeCurrency.btg) + '`)' 
-                  + '\n' + (isUp.eth ? chartUpEmoji : chartDownEmoji) + '*ETH*      ' + nowCurrency.eth + ' (' + (isUp.eth ? '+`' : '`') + (nowCurrency.eth - beforeCurrency.eth) + '`)' 
-                  + '\n' + (isUp.etc ? chartUpEmoji : chartDownEmoji) + '*ETC*       ' + nowCurrency.etc + ' (' + (isUp.etc ? '+`' : '`') + (nowCurrency.etc - beforeCurrency.etc) + '`)' 
-                  + '\n' + (isUp.xrp ? chartUpEmoji : chartDownEmoji) + '*XRP*      ' + nowCurrency.xrp + ' (' + (isUp.xrp ? '+`' : '`') + (nowCurrency.xrp - beforeCurrency.xrp) + '`)' 
-                  + '\n' + (isUp.qtum ? chartUpEmoji : chartDownEmoji) + '*QTUM*  ' + nowCurrency.qtum + ' (' + (isUp.qtum ? '+`' : '`') + (nowCurrency.qtum - beforeCurrency.qtum) + '`)' 
-                  + '\n' + (isUp.ltc ? chartUpEmoji : chartDownEmoji) + '*LTC*       ' + nowCurrency.ltc + ' (' + (isUp.ltc ? '+`' : '`') + (nowCurrency.ltc - beforeCurrency.ltc) + '`)' 
-                  + '\n' + (isUp.iota ? chartUpEmoji : chartDownEmoji) + '*IOTA*     ' + nowCurrency.iota + ' (' + (isUp.iota ? '+`' : '`') +(nowCurrency.iota - beforeCurrency.iota)  + '`)'
-    var url = 'https://api.telegram.org/bot' + config.token + '/sendMessage?chat_id=@coinoneNow&parse_mode=Markdown&disable_notification=true&text=' + currencyNowText
+    var url = 'https://api.telegram.org/bot' + config.testBotToken /* token */ + '/sendMessage?chat_id=' + config.testChannelId /* channelID */ + '&parse_mode=Markdown&disable_notification=true&text=' + currencyNowText
     axios.get(url)
     // .then(function (response) {
     //   console.log(response)
@@ -461,6 +523,12 @@ const sendNowCurrencyToChannel = function() {
     // nothing
   }
   // console.log('currencyNowText', currencyNowText)
+}
+
+const makeNowText = (up, percent, currency, nowPrice, deltaPrice) => {
+  const emoji = (up ? '\xF0\x9F\x93\x88' : '\xF0\x9F\x93\x89')
+  // console.log('makeNowText', up, percent, currency, nowPrice, deltaPrice)
+  return `${emoji}\`${percent}\`*${currency}*${nowPrice}    (\`${deltaPrice}\`)\n`
 }
 
 // system message
@@ -543,7 +611,7 @@ bot.on('message', function (msg) {
       } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota)now/.test(message)) {
         var coinName = message.slice(1, message.indexOf('now'))
         // console.log(message, message.indexOf('now'), coinName)
-        bot.sendMessage(chatID, coinName.toUpperCase() + ' now currenct: ' + nowCurrency[coinName])
+        bot.sendMessage(chatID, coinName.toUpperCase() + ' now currenct: ' + currencys[coinName].now)
       } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota)traded/.test(message)) {
         var coinName = message.slice(1, message.indexOf('traded'))
         // console.log(message, message.indexOf('traded'), coinName)
