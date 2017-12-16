@@ -510,7 +510,7 @@ const sendNowCurrencyToChannel = function() {
       
       currencyNowText += makeNowText( isUP, valueSign + percent + ' '.repeat(7 - percent.length), key.toUpperCase() + ' '.repeat(key === 'qtum' ? 1 : (key === 'iota' ? 4 : 6)), value.now, valueSign + Math.abs(value.deltaPrice))
     }
-    var url = 'https://api.telegram.org/bot' + config.testBotToken /* token */ + '/sendMessage?chat_id=' + config.testChannelId /* channelID */ + '&parse_mode=Markdown&disable_notification=true&text=' + currencyNowText
+    var url = 'https://api.telegram.org/bot' + config.token + '/sendMessage?chat_id=' + config.channelID + '&parse_mode=Markdown&disable_notification=true&text=' + currencyNowText
     axios.get(url)
     // .then(function (response) {
     //   console.log(response)
