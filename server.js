@@ -459,16 +459,16 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
   PERSONAL_API_OBJECT[chatID].balance().then(function (response) {
     var data = response.data
     var totalBalance = (parseInt(data.krw.balance) 
-    + parseInt(data.btc.balance) * parseInt(nowCurrency.btc)
-    + parseInt(data.bch.balance) * parseInt(nowCurrency.bch)
-    // + parseInt(data.btg.balance) * parseInt(nowCurrency.btg) // can not use btg checked at 20171215
-    + parseInt(data.eth.balance) * parseInt(nowCurrency.eth)
-    + parseInt(data.etc.balance) * parseInt(nowCurrency.etc)
-    + parseInt(data.xrp.balance) * parseInt(nowCurrency.xrp)
-    + parseInt(data.qtum.balance) * parseInt(nowCurrency.qtum)
-    + parseInt(data.ltc.balance) * parseInt(nowCurrency.ltc)
-    + parseInt(data.iota.balance) * parseInt(nowCurrency.iota))
-    resultText += 'Your total balance : ₩'  + totalBalance  + '\n'
+    + parseInt(data.btc.balance) * parseFloat(nowCurrency.btc)
+    + parseInt(data.bch.balance) * parseFloat(nowCurrency.bch)
+    // + parseInt(data.btg.balance) * parseFloat(nowCurrency.btg) // can not use btg checked at 20171215
+    + parseInt(data.eth.balance) * parseFloat(nowCurrency.eth)
+    + parseInt(data.etc.balance) * parseFloat(nowCurrency.etc)
+    + parseInt(data.xrp.balance) * parseFloat(nowCurrency.xrp)
+    + parseInt(data.qtum.balance) * parseFloat(nowCurrency.qtum)
+    + parseInt(data.ltc.balance) * parseFloat(nowCurrency.ltc)
+    + parseInt(data.iota.balance) * parseFloat(nowCurrency.iota))
+    resultText += 'Your total balance : ₩'  + parseInt(totalBalance).toLocaleString()  + '\n'
     if(!isOnlyShowTotal) {
       resultText += '[BTC]     ₩' + parseInt(data.btc.balance * currencys.btc.now).toLocaleString() + ' / ' 
                              + data.btc.balance + '\n'
