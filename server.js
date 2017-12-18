@@ -427,7 +427,7 @@ const deleteAlarmFromAlarmList = function (message, chatID) {
 
 const registerAPIkey = function (message, chatID) {
   var messageArray = message.split(' ')
-  // console.log(message, messageArray)
+  console.log(message, messageArray)
   if(messageArray.length !== 3) {
     console.warn('registerAPIkey: format is not correct [ message: ' + message + ']')
     return false
@@ -620,7 +620,7 @@ bot.on('message', function (msg) {
         var coinName = message.slice(1, message.indexOf('order'))
         // console.log(message, message.indexOf('order'), coinName)
         coinoneCurrentOrders(coinName, chatID)
-      } else if (/^(regApiKey|API키등록)$/.test(message)) {
+      } else if (/^(regApiKey|API키등록)/.test(message)) {
         registerAPIkey(message, chatID)
       } else if (/^(showMyAccount|내계좌보기|내계좌확인)$/.test(message)){
         showMyAccountInfo(chatID)
@@ -628,13 +628,13 @@ bot.on('message', function (msg) {
         showMyAccountInfo(chatID, true)
       } else if (/^(showMyAlarm|내알람보기|알람확인)$/.test(message)) {
         bot.sendMessage(chatID, searchInAlarmList(chatID))
-      } else if (/^(addAlarm|알람등록)$/.test(message)) {
+      } else if (/^(addAlarm|알람등록)/.test(message)) {
         if (registerAlarm(message, chatID)) {
           bot.sendMessage(chatID, 'SUCCESS: register alarm.')
         } else {
           bot.sendMessage(chatID, 'FAIL: register alarm. checkout your commend set\n[addAlarm "btc/bch/eth/etc/xrp/qtum/ltc/iota" "price"] or\n[알람등록 "비트/비캐/비골/이클/이더/리플/퀀텀/라코/아이오타" "가격"]')
         }
-      } else if (/^(deleteAlarm|알람삭제)$/.test(message)) {
+      } else if (/^(deleteAlarm|알람삭제)/.test(message)) {
         var result = deleteAlarmFromAlarmList(message, chatID)
         if (result === true) {
           bot.sendMessage(chatID, 'SUCCESS: delete alarm.')
