@@ -50,7 +50,7 @@ class Currency {
     return (this._now - this._before)
   }
   get deltaRate () {
-    return (this._now - this._before) / this._now * 100
+    return (this._now - this._before) / this._before * 100
   }
   get isUp() {
     return (this._now - this._before) > 0
@@ -508,7 +508,7 @@ const sendNowCurrencyToChannel = function() {
       let valueSign = isUP ? '%2B' : '-' // %2B === '+'
       let percent = Math.abs(value.deltaRate).toFixed(2)
       
-      currencyNowText += makeNowText( isUP, valueSign + percent + ' '.repeat(7 - percent.length), key.toUpperCase() + ' '.repeat(key === 'qtum' ? 1 : (key === 'iota' ? 4 : 6)), value.before, valueSign + Math.abs(value.deltaPrice))
+      currencyNowText += makeNowText( isUP, valueSign + percent + ' '.repeat(7 - percent.length), key.toUpperCase() + ' '.repeat(key === 'qtum' ? 1 : (key === 'iota' ? 4 : 6)), value.now, valueSign + Math.abs(value.deltaPrice))
     }
     var url = 'https://api.telegram.org/bot' + config.token + '/sendMessage?chat_id=' + config.channelID + '&parse_mode=Markdown&disable_notification=true&text=' + currencyNowText
     axios.get(url)
@@ -525,10 +525,10 @@ const sendNowCurrencyToChannel = function() {
   // console.log('currencyNowText', currencyNowText)
 }
 
-const makeNowText = (up, percent, currency, beforePrice, deltaPrice) => {
+const makeNowText = (up, percent, currency, nowPrice, deltaPrice) => {
   const emoji = (up ? '\xF0\x9F\x93\x88' : '\xF0\x9F\x93\x89')
-  // console.log('makeNowText', up, percent, currency, beforePrice, deltaPrice)
-  return `${emoji}\`${percent}\`*${currency}*${beforePrice}    (\`${deltaPrice}\`)\n`
+  // console.log('makeNowText', up, percent, currency, nowPrice, deltaPrice)
+  return `${emoji}\`${percent}\`*${currency}*${nowPrice}    (\`${deltaPrice}\`)\n`
 }
 
 // system message
