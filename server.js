@@ -50,7 +50,7 @@ class Currency {
     return (this._now - this._before)
   }
   get deltaRate () {
-    return (this._now - this._before) / this._now * 100
+    return (this._now - this._before) / this._before * 100
   }
   get isUp() {
     return (this._now - this._before) > 0
