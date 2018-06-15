@@ -68,6 +68,8 @@ const currencys = {
   qtum: new Currency(0, 0),
   ltc: new Currency(0, 0),
   iota: new Currency(0, 0),
+  omg: new Currency(0, 0),
+  eos: new Currency(0, 0),
   update: (apiData) => {
     currencys.btc.now = parseInt(apiData.btc.last)
     currencys.btc.before = parseInt(apiData.btc.yesterday_last)
@@ -87,6 +89,10 @@ const currencys = {
     currencys.ltc.before = parseInt(apiData.ltc.yesterday_last)
     currencys.iota.now = parseInt(apiData.iota.last)
     currencys.iota.before = parseInt(apiData.iota.yesterday_last)
+    currencys.omg.now = parseInt(apiData.omg.last)
+    currencys.omg.before = parseInt(apiData.omg.yesterday_last)
+    currencys.eos.now = parseInt(apiData.eos.last)
+    currencys.eos.before = parseInt(apiData.eos.yesterday_last)
   }
 }
 
@@ -100,6 +106,8 @@ var nowCurrency = {
   qtum: 0,
   ltc: 0,
   iota: 0,
+  omg: 0,
+  eos: 0,
   init: function () {
     coinone.ticker('all')
     .then(function (response) {
@@ -115,6 +123,8 @@ var nowCurrency = {
         nowCurrency.qtum = response.data.qtum.last
         nowCurrency.ltc = response.data.ltc.last
         nowCurrency.iota = response.data.iota.last
+        nowCurrency.omg = response.data.omg.last
+        nowCurrency.eos = response.data.eos.last
         
         currencys.update(response.data)
       }
@@ -135,7 +145,9 @@ var beforeCurrency = {
   xrp: 0,
   qtum: 0,
   ltc: 0,
-  iota: 0
+  iota: 0,
+  omg: 0,
+  eos: 0
 }
 
 var isServerGood = true
@@ -150,13 +162,14 @@ var serverStatusVariableReset = function () {
 // util
 const isCurrency = function (c) {
   // console.log('isCurrency', c)
-  return /^(btc|btg|bch|eth|etc|xrp|qtum|ltc|iota)$/.test(c)
+  return /^(btc|btg|bch|eth|etc|xrp|qtum|ltc|iota|omg|eos)$/.test(c)
 }
 
 const changeCoinNameKoreanToEnglish = function (coinName) {
   return coinName.replace('비트', 'btc').replace('비캐', 'bch').replace('비골', 'btg')
                  .replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
                  .replace('퀀텀', 'qtum').replace('라코', 'ltc').replace('아이오타', 'iota')
+                 .replace('오미세고', 'omg').replace('이오스', 'eos')
 }
 
 // const serializeObject = function (object) {
@@ -263,6 +276,8 @@ const coinoneCurrency = function () {
     nowCurrency.qtum = data.qtum.last
     nowCurrency.ltc = data.ltc.last
     nowCurrency.iota = data.iota.last
+    nowCurrency.omg = data.omg.last
+    nowCurrency.eos = data.eos.last
 
     beforeCurrency.btc = data.btc.yesterday_last
     beforeCurrency.bch = data.bch.yesterday_last
@@ -273,6 +288,8 @@ const coinoneCurrency = function () {
     beforeCurrency.qtum = data.qtum.yesterday_last
     beforeCurrency.ltc = data.ltc.yesterday_last
     beforeCurrency.iota = data.iota.yesterday_last
+    beforeCurrency.omg = data.omg.yesterday_last
+    beforeCurrency.eos = data.eos.yesterday_last
     // console.log(data.result, JSON.stringify(alarmList))
   })
   .catch(function (error) {
@@ -467,7 +484,9 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
     + parseInt(data.xrp.balance) * parseFloat(nowCurrency.xrp)
     + parseInt(data.qtum.balance) * parseFloat(nowCurrency.qtum)
     + parseInt(data.ltc.balance) * parseFloat(nowCurrency.ltc)
-    + parseInt(data.iota.balance) * parseFloat(nowCurrency.iota))
+    + parseInt(data.iota.balance) * parseFloat(nowCurrency.iota)
+    + parseInt(data.omg.balance) * parseFloat(nowCurrency.omg)
+    + parseInt(data.eos.balance) * parseFloat(nowCurrency.eos))
     resultText += 'Your total balance : ₩'  + parseInt(totalBalance).toLocaleString()  + '\n'
     if(!isOnlyShowTotal) {
       resultText += '[BTC]     ₩' + parseInt(data.btc.balance * currencys.btc.now).toLocaleString() + ' / ' 
@@ -487,7 +506,11 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
       resultText += '[LTC]     ₩' + parseInt(data.ltc.balance * currencys.ltc.now).toLocaleString() + ' / ' 
                              + data.ltc.balance + '\n'
       resultText += '[IOTA]   ₩' + parseInt(data.iota.balance * currencys.iota.now).toLocaleString() + ' / ' 
-                             + data.iota.balance
+                             + data.iota.balance + '\n'
+      resultText += '[OMG]   ₩' + parseInt(data.omg.balance * currencys.omg.now).toLocaleString() + ' / ' 
+                             + data.omg.balance + '\n'
+      resultText += '[EOS]   ₩' + parseInt(data.eos.balance * currencys.eos.now).toLocaleString() + ' / ' 
+                             + data.eos.balance
     }
     bot.sendMessage(chatID, resultText)
   }).catch(function(error) {
@@ -544,6 +567,8 @@ const sendHelpMessage = function (chatID) {
                         + '/qtumnow : 퀀텀의 현재가격을 보여줍니다.\n'
                         + '/ltcnow : 라이트코인의 현재가격을 보여줍니다.\n'
                         + '/iotanow : 아이오타의 현재가격을 보여줍니다.\n'
+                        + '/omgnow : 오미세고의 현재가격을 보여줍니다.\n'
+                        + '/eosnow : 이오스의 현재가격을 보여줍니다.\n'
                         + '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/bchtraded : 비트코인캐시의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btgtraded : 비트코인골드의 최근 거래내역 10개를 보여줍니다.\n'
@@ -553,6 +578,8 @@ const sendHelpMessage = function (chatID) {
                         + '/qtumtraded : 퀀텀의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/ltctraded : 라이트코인의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/iotatraded : 아이오타의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/omgtraded : 오미세고의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/eostraded : 이오스의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
                         + '/bchorder : 비트코인캐시의 현재 시장상황을 보여줍니다.\n'
                         + '/btgorder : 비트코인골드의 현재 시장상황을 보여줍니다.\n'
@@ -562,6 +589,8 @@ const sendHelpMessage = function (chatID) {
                         + '/qtumorder : 퀀텀의 현재 시장상황을 보여줍니다.\n'
                         + '/ltcorder : 라이트코인의 현재 시장상황을 보여줍니다.\n'
                         + '/iotaorder : 아이오타의 현재 시장상황을 보여줍니다.\n'
+                        + '/omgorder : 오미세고의 현재 시장상황을 보여줍니다.\n'
+                        + '/eosorder : 이오스의 현재 시장상황을 보여줍니다.\n'
                         + '알람확인 : 내가 등록한 코인의 종류를 알려줍니다.\n'
                         + '알람등록 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 등록합니다.\n'
                         + '알람삭제 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 삭제합니다.\n'
@@ -573,7 +602,8 @@ const sendHelpMessage = function (chatID) {
           [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/btgnow'}],
           [{text: '/ethnow'}, {text: '/etcnow'}, {text: '/xrpnow'}],
           [{text: '/qtumnow'}, {text: '/ltcnow'}, {text: '/iotanow'}],
-          [{text: '/help'}, {text: '알람확인'}, {text: '내돈확인'}],
+          [{text: '/omgnow'}, {text: '/eosnow'}, {text: '/help'}],
+          [{text: '알람확인'}, {text: '내돈확인'}],
         ],
         resize_keyboard: true
       }
@@ -608,15 +638,15 @@ bot.on('message', function (msg) {
         sendHelpMessage(msg.chat.id)
       } else if (/\/help/.test(message)) {
         sendHelpMessage(msg.chat.id)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota)now/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos)now/.test(message)) {
         var coinName = message.slice(1, message.indexOf('now'))
         // console.log(message, message.indexOf('now'), coinName)
         bot.sendMessage(chatID, coinName.toUpperCase() + ' now currenct: ' + currencys[coinName].now)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota)traded/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos)traded/.test(message)) {
         var coinName = message.slice(1, message.indexOf('traded'))
         // console.log(message, message.indexOf('traded'), coinName)
         coinoneRecentCompletedOrders(coinName, chatID)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota)order/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos)order/.test(message)) {
         var coinName = message.slice(1, message.indexOf('order'))
         // console.log(message, message.indexOf('order'), coinName)
         coinoneCurrentOrders(coinName, chatID)
