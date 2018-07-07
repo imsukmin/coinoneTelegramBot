@@ -72,6 +72,8 @@ const currencys = {
   eos: new Currency(0, 0),
   data: new Currency(0, 0),
   zil: new Currency(0, 0),
+  knc: new Currency(0, 0),
+  zrx: new Currency(0, 0),
   update: (apiData) => {
     currencys.btc.now = parseInt(apiData.btc.last)
     currencys.btc.before = parseInt(apiData.btc.yesterday_last)
@@ -99,6 +101,10 @@ const currencys = {
     currencys.data.before = parseInt(apiData.data.yesterday_last)
     currencys.zil.now = parseInt(apiData.zil.last)
     currencys.zil.before = parseInt(apiData.zil.yesterday_last)
+    currencys.knc.now = parseInt(apiData.knc.last)
+    currencys.knc.before = parseInt(apiData.knc.yesterday_last)
+    currencys.zrx.now = parseInt(apiData.zrx.last)
+    currencys.zrx.before = parseInt(apiData.zrx.yesterday_last)
   }
 }
 
@@ -116,6 +122,8 @@ var nowCurrency = {
   eos: 0,
   data: 0,
   zil: 0,
+  knc: 0,
+  zrx: 0,
   init: function () {
     coinone.ticker('all')
     .then(function (response) {
@@ -135,6 +143,8 @@ var nowCurrency = {
         nowCurrency.eos = response.data.eos.last
         nowCurrency.data = response.data.data.last
         nowCurrency.zil = response.data.zil.last
+        nowCurrency.knc = response.data.knc.last
+        nowCurrency.zrx = response.data.zrx.last
         
         currencys.update(response.data)
       }
@@ -159,7 +169,9 @@ var beforeCurrency = {
   omg: 0,
   eos: 0,
   data: 0,
-  zil: 0
+  zil: 0,
+  knc: 0,
+  zrx: 0
 }
 
 var isServerGood = true
@@ -174,7 +186,7 @@ var serverStatusVariableReset = function () {
 // util
 const isCurrency = function (c) {
   // console.log('isCurrency', c)
-  return /^(btc|btg|bch|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil)$/.test(c)
+  return /^(btc|btg|bch|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|knc|zrx)$/.test(c)
 }
 
 const changeCoinNameKoreanToEnglish = function (coinName) {
@@ -182,7 +194,7 @@ const changeCoinNameKoreanToEnglish = function (coinName) {
                  .replace('이더', 'eth').replace('이클', 'etc').replace('리플', 'xrp')
                  .replace('퀀텀', 'qtum').replace('라코', 'ltc').replace('아이오타', 'iota')
                  .replace('오미세고', 'omg').replace('이오스', 'eos').replace('데이타', 'data')
-                 .replace('질리카', 'zil')
+                 .replace('질리카', 'zil').replace('카이버', 'knc').replace('제로엑스', 'zrx')
 }
 
 // const serializeObject = function (object) {
@@ -293,6 +305,8 @@ const coinoneCurrency = function () {
     nowCurrency.eos = data.eos.last
     nowCurrency.data = data.data.last
     nowCurrency.zil = data.zil.last
+    nowCurrency.knc = data.knc.last
+    nowCurrency.zrx = data.zrx.last
 
     beforeCurrency.btc = data.btc.yesterday_last
     beforeCurrency.bch = data.bch.yesterday_last
@@ -305,6 +319,10 @@ const coinoneCurrency = function () {
     beforeCurrency.iota = data.iota.yesterday_last
     beforeCurrency.omg = data.omg.yesterday_last
     beforeCurrency.eos = data.eos.yesterday_last
+    beforeCurrency.data = data.data.yesterday_last
+    beforeCurrency.zil = data.zil.yesterday_last
+    beforeCurrency.knc = data.knc.yesterday_last
+    beforeCurrency.zrx = data.zrx.yesterday_last
     // console.log(data.result, JSON.stringify(alarmList))
   })
   .catch(function (error) {
@@ -493,7 +511,7 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
     var totalBalance = (parseInt(data.krw.balance) 
     + parseInt(data.btc.balance) * parseFloat(nowCurrency.btc)
     + parseInt(data.bch.balance) * parseFloat(nowCurrency.bch)
-    // + parseInt(data.btg.balance) * parseFloat(nowCurrency.btg) // can not use btg checked at 20171215
+    + parseInt(data.btg.balance) * parseFloat(nowCurrency.btg)
     + parseInt(data.eth.balance) * parseFloat(nowCurrency.eth)
     + parseInt(data.etc.balance) * parseFloat(nowCurrency.etc)
     + parseInt(data.xrp.balance) * parseFloat(nowCurrency.xrp)
@@ -510,8 +528,8 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
                               + data.btc.balance + '\n'
       resultText += '[BCH]    ₩' + parseInt(data.bch.balance * currencys.bch.now).toLocaleString() + ' / ' 
                               + data.bch.balance + '\n'
-      // resultText += '[BTG]    ₩' parseInt(+ data.btg.balance * currencys.btg.).toLocaleString()now + ' / ' 
-      //                        + data.btg.balance + '\n' // can not use btg  checked at 20171215
+      resultText += '[BTG]    ₩' + parseInt(+ data.btg.balance * currencys.btg.now).toLocaleString() + ' / ' 
+                              + data.btg.balance + '\n' 
       resultText += '[ETH]     ₩' + parseInt(data.eth.balance * currencys.eth.now).toLocaleString() + ' / ' 
                               + data.eth.balance + '\n'
       resultText += '[ETC]     ₩' + parseInt(data.etc.balance * currencys.etc.now).toLocaleString() + ' / ' 
@@ -531,7 +549,11 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
       resultText += '[DATA]   ₩' + parseInt(data.data.balance * currencys.data.now).toLocaleString() + ' / ' 
                               + data.data.balance + '\n'
       resultText += '[ZIL]   ₩' + parseInt(data.zil.balance * currencys.zil.now).toLocaleString() + ' / ' 
-                              + data.zil.balance
+                              + data.zil.balance + '\n'
+      resultText += '[KRX]   ₩' + parseInt(data.krx.balance * currencys.krx.now).toLocaleString() + ' / ' 
+                              + data.krx.balance + '\n'
+      resultText += '[ZRX]   ₩' + parseInt(data.zrx.balance * currencys.zrx.now).toLocaleString() + ' / ' 
+                              + data.zrx.balance
     }
     bot.sendMessage(chatID, resultText)
   }).catch(function(error) {
@@ -592,6 +614,8 @@ const sendHelpMessage = function (chatID) {
                         + '/eosnow : 이오스의 현재가격을 보여줍니다.\n'
                         + '/datanow : 데이타의 현재가격을 보여줍니다.\n'
                         + '/zilnow : 질리카의 현재가격을 보여줍니다.\n'
+                        + '/krxnow : 카이버의 현재가격을 보여줍니다.\n'
+                        + '/zrxnow : 제로엑스의 현재가격을 보여줍니다.\n'
                         + '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/bchtraded : 비트코인캐시의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btgtraded : 비트코인골드의 최근 거래내역 10개를 보여줍니다.\n'
@@ -605,6 +629,8 @@ const sendHelpMessage = function (chatID) {
                         + '/eostraded : 이오스의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/datatraded : 데이타의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/ziltraded : 질리카의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/krxtraded : 카이버의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/zrxtraded : 제로엑스의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
                         + '/bchorder : 비트코인캐시의 현재 시장상황을 보여줍니다.\n'
                         + '/btgorder : 비트코인골드의 현재 시장상황을 보여줍니다.\n'
@@ -618,6 +644,8 @@ const sendHelpMessage = function (chatID) {
                         + '/eosorder : 이오스의 현재 시장상황을 보여줍니다.\n'
                         + '/dataorder : 데이타의 현재 시장상황을 보여줍니다.\n'
                         + '/zilorder : 질리카의 현재 시장상황을 보여줍니다.\n'
+                        + '/krxorder : 카이버의 현재 시장상황을 보여줍니다.\n'
+                        + '/zrxorder : 제로엑스의 현재 시장상황을 보여줍니다.\n'
                         + '알람확인 : 내가 등록한 코인의 종류를 알려줍니다.\n'
                         + '알람등록 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 등록합니다.\n'
                         + '알람삭제 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 삭제합니다.\n'
@@ -626,11 +654,10 @@ const sendHelpMessage = function (chatID) {
   bot.sendMessage(chatID, sendMessageText, {
       reply_markup: {
         keyboard: [
-          [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/btgnow'}],
-          [{text: '/ethnow'}, {text: '/etcnow'}, {text: '/xrpnow'}],
-          [{text: '/qtumnow'}, {text: '/ltcnow'}, {text: '/iotanow'}],
-          [{text: '/omgnow'}, {text: '/eosnow'}, {text: '/datanow'}],
-          [{text: '/zilnow'}, {text: '/help'}]
+          [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/btgnow'}, {text: '/ethnow'}],
+          [{text: '/etcnow'}, {text: '/xrpnow'}, {text: '/qtumnow'}, {text: '/ltcnow'}],
+          [{text: '/iotanow'}, {text: '/omgnow'}, {text: '/eosnow'}, {text: '/datanow'}],
+          [{text: '/zilnow'}, {text: '/krxnow'}, {text: '/zrxnow'}, {text: '/help'}]
         ],
         resize_keyboard: true
       }
@@ -665,15 +692,15 @@ bot.on('message', function (msg) {
         sendHelpMessage(msg.chat.id)
       } else if (/\/help/.test(message)) {
         sendHelpMessage(msg.chat.id)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil)now/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|krx|zrx)now/.test(message)) {
         var coinName = message.slice(1, message.indexOf('now'))
         // console.log(message, message.indexOf('now'), coinName)
         bot.sendMessage(chatID, coinName.toUpperCase() + ' now currenct: ' + currencys[coinName].now)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil)traded/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|krx|zrx)traded/.test(message)) {
         var coinName = message.slice(1, message.indexOf('traded'))
         // console.log(message, message.indexOf('traded'), coinName)
         coinoneRecentCompletedOrders(coinName, chatID)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil)order/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|krx|zrx)order/.test(message)) {
         var coinName = message.slice(1, message.indexOf('order'))
         // console.log(message, message.indexOf('order'), coinName)
         coinoneCurrentOrders(coinName, chatID)
