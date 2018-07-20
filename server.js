@@ -550,8 +550,8 @@ const showMyAccountInfo = function (chatID, isOnlyShowTotal) {
                               + data.data.balance + '\n'
       resultText += '[ZIL]     ₩' + parseInt(data.zil.balance * currencys.zil.now).toLocaleString() + ' / ' 
                               + data.zil.balance + '\n'
-      resultText += '[KRX]   ₩' + parseInt(data.krx.balance * currencys.krx.now).toLocaleString() + ' / ' 
-                              + data.krx.balance + '\n'
+      resultText += '[KNC]   ₩' + parseInt(data.knc.balance * currencys.knc.now).toLocaleString() + ' / ' 
+                              + data.knc.balance + '\n'
       resultText += '[ZRX]   ₩' + parseInt(data.zrx.balance * currencys.zrx.now).toLocaleString() + ' / ' 
                               + data.zrx.balance
     }
@@ -614,7 +614,7 @@ const sendHelpMessage = function (chatID) {
                         + '/eosnow : 이오스의 현재가격을 보여줍니다.\n'
                         + '/datanow : 데이타의 현재가격을 보여줍니다.\n'
                         + '/zilnow : 질리카의 현재가격을 보여줍니다.\n'
-                        + '/krxnow : 카이버의 현재가격을 보여줍니다.\n'
+                        + '/kncnow : 카이버의 현재가격을 보여줍니다.\n'
                         + '/zrxnow : 제로엑스의 현재가격을 보여줍니다.\n'
                         + '/btctraded : 비트코인의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/bchtraded : 비트코인캐시의 최근 거래내역 10개를 보여줍니다.\n'
@@ -629,7 +629,7 @@ const sendHelpMessage = function (chatID) {
                         + '/eostraded : 이오스의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/datatraded : 데이타의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/ziltraded : 질리카의 최근 거래내역 10개를 보여줍니다.\n'
-                        + '/krxtraded : 카이버의 최근 거래내역 10개를 보여줍니다.\n'
+                        + '/knctraded : 카이버의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/zrxtraded : 제로엑스의 최근 거래내역 10개를 보여줍니다.\n'
                         + '/btcorder : 비트코인의 현재 시장상황을 보여줍니다.\n'
                         + '/bchorder : 비트코인캐시의 현재 시장상황을 보여줍니다.\n'
@@ -644,7 +644,7 @@ const sendHelpMessage = function (chatID) {
                         + '/eosorder : 이오스의 현재 시장상황을 보여줍니다.\n'
                         + '/dataorder : 데이타의 현재 시장상황을 보여줍니다.\n'
                         + '/zilorder : 질리카의 현재 시장상황을 보여줍니다.\n'
-                        + '/krxorder : 카이버의 현재 시장상황을 보여줍니다.\n'
+                        + '/kncorder : 카이버의 현재 시장상황을 보여줍니다.\n'
                         + '/zrxorder : 제로엑스의 현재 시장상황을 보여줍니다.\n'
                         + '알람확인 : 내가 등록한 코인의 종류를 알려줍니다.\n'
                         + '알람등록 [코인종류] [금액] : 코인종류 및 금액에 대한 알람을 등록합니다.\n'
@@ -657,7 +657,7 @@ const sendHelpMessage = function (chatID) {
           [{text: '/btcnow'}, {text: '/bchnow'}, {text: '/btgnow'}, {text: '/ethnow'}],
           [{text: '/etcnow'}, {text: '/xrpnow'}, {text: '/qtumnow'}, {text: '/ltcnow'}],
           [{text: '/iotanow'}, {text: '/omgnow'}, {text: '/eosnow'}, {text: '/datanow'}],
-          [{text: '/zilnow'}, {text: '/krxnow'}, {text: '/zrxnow'}, {text: '/help'}]
+          [{text: '/zilnow'}, {text: '/kncnow'}, {text: '/zrxnow'}, {text: '/help'}]
         ],
         resize_keyboard: true
       }
@@ -692,15 +692,15 @@ bot.on('message', function (msg) {
         sendHelpMessage(msg.chat.id)
       } else if (/\/help/.test(message)) {
         sendHelpMessage(msg.chat.id)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|krx|zrx)now/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|knc|zrx)now/.test(message)) {
         var coinName = message.slice(1, message.indexOf('now'))
         // console.log(message, message.indexOf('now'), coinName)
         bot.sendMessage(chatID, coinName.toUpperCase() + ' now currenct: ' + currencys[coinName].now)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|krx|zrx)traded/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|knc|zrx)traded/.test(message)) {
         var coinName = message.slice(1, message.indexOf('traded'))
         // console.log(message, message.indexOf('traded'), coinName)
         coinoneRecentCompletedOrders(coinName, chatID)
-      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|krx|zrx)order/.test(message)) {
+      } else if (/\/(btc|bch|btg|eth|etc|xrp|qtum|ltc|iota|omg|eos|data|zil|knc|zrx)order/.test(message)) {
         var coinName = message.slice(1, message.indexOf('order'))
         // console.log(message, message.indexOf('order'), coinName)
         coinoneCurrentOrders(coinName, chatID)
